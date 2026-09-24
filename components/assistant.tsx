@@ -34,7 +34,7 @@ export function Assistant() {
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ message, history: nextMessages.slice(-8) }),
       });
-      const body = await response.json() as { answer?: string };
+      const body = await response.json() as { answer?: string; enquiry?: { reference: string } };
       setMessages((current) => [...current, { role: "assistant", content: body.answer || "I could not complete that request. Please use the enquiry form or contact our team." }]);
     } catch {
       setMessages((current) => [...current, { role: "assistant", content: "The assistant is temporarily unavailable. Please use Book / Enquire or the WhatsApp handover button." }]);
@@ -58,7 +58,7 @@ export function Assistant() {
           </div>
           <div className="assistant-messages" ref={scroller} aria-live="polite">
             {messages.map((message, index) => <div className={`message ${message.role}`} key={`${message.role}-${index}`}>{message.content}</div>)}
-            {busy ? <div className="message assistant">Reviewing the approved service information…</div> : null}
+            {busy ? <div className="message assistant">Reviewing approved service information…</div> : null}
           </div>
           <div className="assistant-quick">
             {[
@@ -72,6 +72,7 @@ export function Assistant() {
             <input id="assistant-message" value={input} onChange={(event) => setInput(event.target.value)} maxLength={600} placeholder="Ask about a service…" />
             <button type="submit" disabled={busy} aria-label="Send message"><Send size={17} /></button>
           </form>
+          <p className="assistant-privacy">Messages may be processed by our approved AI provider. Do not share passwords, payment-card data or identity-document numbers.</p>
         </section>
       ) : null}
       <button className="assistant-toggle" type="button" onClick={() => setOpen((value) => !value)} aria-label="Open A.A.U Assist" aria-expanded={open}>

@@ -1,29 +1,13 @@
 import { z } from "zod";
-import { createEnquiry, updateNotification } from "@/lib/enquiries";
-import { notifyEnquiry } from "@/lib/email";
+import { enquiryInputSchema, missingEnquiryDetails } from "@/lib/enquiry-validation";
+import { submitEnquiry } from "@/lib/enquiry-service";
 
 export const runtime = "nodejs";
 
-const schema = z.object({
-  type: z.enum(["flight", "cargo", "courier", "umrah", "visa", "travel", "general"]),
-  name: z.string().trim().min(2).max(160),
-  email: z.string().trim().email().max(254),
-  phone: z.string().trim().min(7).max(40).regex(/^[+\d\s().-]+$/),
-  message: z.string().trim().max(2000).optional().default(""),
+const schema = enquiryInputSchema.extend({
   consent: z.literal(true),
   company: z.string().max(0).optional().default(""),
-  details: z.record(z.string().max(60), z.string().trim().max(500)),
 });
-
-const requiredDetails: Record<string, string[]> = {
-  flight: ["departure", "destination", "travelDate", "passengers"],
-  cargo: ["sender", "receiver", "origin", "destination", "cargoType", "weight", "preferredDate", "deliveryOption"],
-  courier: ["pickupLocation", "deliveryLocation", "preferredDate", "packageDetails"],
-  umrah: ["travellers", "preferredDate", "packageInterest"],
-  visa: ["country", "nationality", "travelPurpose", "travelDate"],
-  travel: ["serviceType", "destination", "travelDate"],
-  general: ["subject"],
-};
 
 const buckets = new Map<string, { count: number; resetAt: number }>();
 
@@ -46,10 +30,10 @@ export async function POST(request: Request) {
 
   try {
     const input = schema.parse(await request.json());
-    const missing = requiredDetails[input.type].filter((key) => !input.details[key]);
+    const missing = missingEnquiryDetails(input.type, input.details);
     if (missing.length) return Response.json({ ok: false, error: "Please complete all required service details." }, { status: 422 });
 
-    const record = await createEnquiry({
+    const { record, emailSent } = await submitEnquiry({
       type: input.type,
       name: input.name,
       email: input.email,
@@ -57,14 +41,6 @@ export async function POST(request: Request) {
       message: input.message,
       details: input.details,
     });
-
-    let emailSent = false;
-    try {
-      emailSent = await notifyEnquiry(record);
-      await updateNotification(record.reference, emailSent ? "Sent" : "Skipped");
-    } catch (error) {
-      await updateNotification(record.reference, "Failed", error instanceof Error ? error.message.slice(0, 500) : "Unknown email error");
-    }
 
     return Response.json({ ok: true, reference: record.reference, status: record.status, emailSent }, { status: 201 });
   } catch (error) {

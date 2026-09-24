@@ -5,7 +5,8 @@ import { notFound } from "next/navigation";
 import { CtaBand } from "@/components/cta-band";
 import { PageHero } from "@/components/page-hero";
 import { getService, services } from "@/lib/content";
-import { whatsappHref } from "@/lib/site";
+import { breadcrumbJsonLd, createPageMetadata } from "@/lib/seo";
+import { siteConfig, whatsappHref } from "@/lib/site";
 
 export function generateStaticParams() { return services.map((service) => ({ slug: service.slug })); }
 
@@ -15,7 +16,7 @@ export async function generateMetadata({ params }: ServicePageProps): Promise<Me
   const { slug } = await params;
   const service = getService(slug);
   if (!service) return {};
-  return { title: service.title, description: service.summary };
+  return createPageMetadata({ title: service.title, description: service.summary, path: `/services/${service.slug}` });
 }
 
 export default async function ServicePage({ params }: ServicePageProps) {
@@ -25,6 +26,22 @@ export default async function ServicePage({ params }: ServicePageProps) {
   const typeMap: Record<string, string> = { "flight-reservation-ticketing": "flight", "air-cargo-logistics": "cargo", "courier-delivery": "courier", "visa-assistance": "visa", "travel-insurance": "travel", "umrah-ziyarah": "umrah" };
   const enquiryType = typeMap[service.slug] || "general";
   const whatsapp = whatsappHref(`Hello A.A.U Chamo, I would like to enquire about ${service.title}.`);
+  const structuredData = [
+    {
+      "@context": "https://schema.org",
+      "@type": "Service",
+      name: service.title,
+      description: service.description,
+      provider: { "@id": `${siteConfig.url}/#organization` },
+      areaServed: { "@type": "Country", name: "Nigeria" },
+      url: `${siteConfig.url}/services/${service.slug}`,
+    },
+    breadcrumbJsonLd([
+      { name: "Home", path: "/" },
+      { name: "Services", path: "/services" },
+      { name: service.title, path: `/services/${service.slug}` },
+    ]),
+  ];
 
   return (
     <>
@@ -42,6 +59,7 @@ export default async function ServicePage({ params }: ServicePageProps) {
       <section className="section" style={{ background: "var(--paper)" }}><div className="shell"><span className="eyebrow">Service process</span><h2 className="headline" style={{ marginBottom: 48 }}>Four steps, clearly owned.</h2><div className="process-grid">{service.process.map((step, index) => <div className="process-step" key={step.title}><span className="step-no">{index + 1}</span><h3>{step.title}</h3><p>{step.detail}</p></div>)}</div></div></section>
       <section className="section"><div className="shell"><span className="eyebrow">Frequently asked</span><h2 className="headline" style={{ marginBottom: 44 }}>Before you submit.</h2><div className="faq-list">{service.faqs.map((faq) => <details className="faq-item" key={faq.question}><summary>{faq.question}<Plus size={19} /></summary><p>{faq.answer}</p></details>)}</div></div></section>
       <CtaBand title={`Start a ${service.shortTitle.toLowerCase()} request.`} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData).replace(/</g, "\\u003c") }} />
     </>
   );
 }

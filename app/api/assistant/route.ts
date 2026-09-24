@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { createHash } from "node:crypto";
 import { answerAssistant } from "@/lib/assistant";
 
 const schema = z.object({
@@ -17,8 +18,9 @@ export async function POST(request: Request) {
 
   try {
     const input = schema.parse(await request.json());
-    const answer = await answerAssistant(input.message, input.history);
-    return Response.json({ answer, scope: "approved-service-information", confirmation: false });
+    const safetyIdentifier = createHash("sha256").update(`aau-chamo:${key}`).digest("hex").slice(0, 32);
+    const result = await answerAssistant(input.message, input.history, safetyIdentifier);
+    return Response.json({ ...result, scope: "approved-service-information", confirmation: false });
   } catch (error) {
     const status = error instanceof z.ZodError ? 422 : 500;
     return Response.json({ answer: "I could not process that message. Please submit an enquiry for staff assistance." }, { status });

@@ -4,6 +4,13 @@ import { ArrowRight, ArrowUpRight, Check, Plane, Route } from "lucide-react";
 import { CtaBand } from "@/components/cta-band";
 import { TrackingDock } from "@/components/tracking-dock";
 import { branches, newsItems, services } from "@/lib/content";
+import { createPageMetadata } from "@/lib/seo";
+
+export const metadata = createPageMetadata({
+  title: "Cargo, Travel & Business Services",
+  description: "Cargo logistics, flight reservations, courier delivery, visa support and international business services across Nigeria and beyond.",
+  path: "/",
+});
 
 export default function Home() {
   return (

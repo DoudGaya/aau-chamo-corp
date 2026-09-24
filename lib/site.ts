@@ -8,6 +8,12 @@ export const siteConfig = {
   hours: process.env.NEXT_PUBLIC_BUSINESS_HOURS || "Monday - Saturday, 08:00 - 18:00 WAT",
   whatsappNumber: process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "",
   mapEmbedUrl: process.env.NEXT_PUBLIC_MAP_EMBED_URL || "",
+  socialLinks: [
+    process.env.NEXT_PUBLIC_FACEBOOK_URL,
+    process.env.NEXT_PUBLIC_INSTAGRAM_URL,
+    process.env.NEXT_PUBLIC_LINKEDIN_URL,
+    process.env.NEXT_PUBLIC_X_URL,
+  ].filter((value): value is string => Boolean(value)),
 };
 
 export function whatsappHref(message = "Hello A.A.U Chamo, I would like to make an enquiry.") {
