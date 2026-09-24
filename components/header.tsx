@@ -43,13 +43,16 @@ export function Header() {
         </div>
       </div>
       {open && (
-        <nav id="mobile-navigation" className="mobile-menu" aria-label="Mobile navigation">
-          {[...navigation, { label: "Track cargo", href: "/track-cargo" }, { label: "Book / Enquire", href: "/enquire" }].map((item) => (
-            <Link key={item.href} href={item.href} onClick={() => setOpen(false)}>
-              {item.label}{item.href === "/track-cargo" ? <PackageSearch size={16} /> : null}
-            </Link>
-          ))}
-        </nav>
+        <>
+          <div className="mobile-backdrop" onClick={() => setOpen(false)} aria-hidden="true" />
+          <nav id="mobile-navigation" className="mobile-menu" aria-label="Mobile navigation">
+            {[...navigation, { label: "Track cargo", href: "/track-cargo" }, { label: "Book / Enquire", href: "/enquire" }].map((item) => (
+              <Link key={item.href} href={item.href} onClick={() => setOpen(false)}>
+                {item.label}{item.href === "/track-cargo" ? <PackageSearch size={16} /> : null}
+              </Link>
+            ))}
+          </nav>
+        </>
       )}
     </header>
   );
