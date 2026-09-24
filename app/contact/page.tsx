@@ -24,7 +24,20 @@ export default function ContactPage() {
               <div className="contact-row"><Clock3 size={19} /><div><strong>Business hours</strong><span>{siteConfig.hours}</span></div></div>
             </div>
           </div>
-          {siteConfig.mapEmbedUrl ? <iframe className="map-frame" src={siteConfig.mapEmbedUrl} title="A.A.U Chamo location" loading="lazy" referrerPolicy="no-referrer-when-downgrade" /> : <div className="map-frame"><div className="map-pin"><MapPin size={34} /></div></div>}
+          <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+            {siteConfig.mapEmbedUrl ? (
+              <iframe className="map-frame" src={siteConfig.mapEmbedUrl} title="A.A.U Chamo location" loading="lazy" referrerPolicy="no-referrer-when-downgrade" />
+            ) : (
+              <a href="https://maps.app.goo.gl/gygqGX6SRKxaG3bV9" target="_blank" rel="noreferrer" className="map-frame" aria-label="View location on Google Maps">
+                <div className="map-pin"><MapPin size={34} /></div>
+              </a>
+            )}
+            <div style={{ textAlign: "right" }}>
+              <a href="https://maps.app.goo.gl/gygqGX6SRKxaG3bV9" target="_blank" rel="noreferrer" style={{ display: "inline-flex", alignItems: "center", gap: "8px", fontSize: "14px", fontWeight: 600, color: "var(--red)" }}>
+                View on Google Maps <MapPin size={16} />
+              </a>
+            </div>
+          </div>
         </div>
       </section>
       <section className="section" style={{ background: "var(--paper)" }}><div className="shell form-layout"><div><span className="eyebrow">General enquiry</span><h2 className="headline">Send a message with a trackable reference.</h2><p className="lede">For a specific cargo or travel request, choose the matching service type in the form.</p><div className="branch-list">{branches.map((branch) => <div className="branch-item" key={branch.city}><strong>{branch.city}</strong><span>{branch.role}</span></div>)}</div></div><EnquiryForm defaultType="general" /></div></section>
