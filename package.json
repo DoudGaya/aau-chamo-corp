@@ -13,15 +13,17 @@
   },
   "dependencies": {
     "@portabletext/react": "^8.0.1",
+    "@prisma/client": "^5.13.0",
     "@sanity/client": "^8.6.2",
     "@sanity/image-url": "^2.1.1",
     "@sanity/webhook": "^4.0.4",
     "lucide-react": "^1.47.0",
     "next": "16.3.5",
+    "next-sanity": "^13.3.4",
     "openai": "^7.20.0",
-    "@prisma/client": "^5.13.0",
     "react": "19.2.8",
     "react-dom": "19.2.8",
+    "sanity": "^6.16.0",
     "zod": "^4.6.5"
   },
   "devDependencies": {
