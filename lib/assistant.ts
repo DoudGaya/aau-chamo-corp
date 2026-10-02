@@ -19,6 +19,35 @@ const currencyClaim = /(?:₦|\bNGN\b|\bUSD\b|\$|€|£)\s?\d/i;
 const confirmationClaim = /\b(?:booking|reservation|shipment|transaction)\s+(?:is|has been|was)\s+(?:confirmed|completed|booked)\b/i;
 const exactTimelineClaim = /\b(?:deliver|arriv)(?:e|ed|es|ing)?\s+(?:in|within|by)\s+\d/i;
 
+// ─── Monthly spend guardrail ─────────────────────────────────────────────────
+// In-process counter: resets on cold start, good enough for a soft budget guard.
+// For hard guarantees, set a spend limit in the OpenAI dashboard.
+const budgetTracker = {
+  month: new Date().getMonth(),
+  estimatedTokens: 0,
+};
+
+const TOKENS_PER_DOLLAR_GPT4O_MINI = 5_000_000; // ~$0.20 per 1M output tokens (conservative estimate)
+
+function recordTokenUsage(tokens: number): void {
+  const currentMonth = new Date().getMonth();
+  if (currentMonth !== budgetTracker.month) {
+    budgetTracker.month = currentMonth;
+    budgetTracker.estimatedTokens = 0;
+  }
+  budgetTracker.estimatedTokens += tokens;
+}
+
+function isBudgetExceeded(): boolean {
+  const limitUsd = Number(process.env.OPENAI_MONTHLY_BUDGET_USD || 0);
+  if (!limitUsd) return false;
+  const estimatedUsd = budgetTracker.estimatedTokens / TOKENS_PER_DOLLAR_GPT4O_MINI;
+  if (estimatedUsd >= limitUsd * 0.8 && estimatedUsd < limitUsd) {
+    console.warn(`[assistant] AI spend at ${Math.round((estimatedUsd / limitUsd) * 100)}% of monthly budget ($${limitUsd.toFixed(2)})`);
+  }
+  return estimatedUsd >= limitUsd;
+}
+
 const safetyReply = "I cannot verify prices, live availability, delivery timelines or booking confirmations. I can collect your request for an authorised A.A.U Chamo staff member to review. Use Book / Enquire, or tell me you want to start an enquiry.";
 
 const detailKeys = [
@@ -121,6 +150,14 @@ export async function answerAssistant(message: string, history: HistoryMessage[]
   const model = process.env.OPENAI_MODEL?.trim();
   if (!apiKey || !model) return localAnswer(message);
 
+  // Soft budget guardrail: fall back to local knowledge if monthly spend is exceeded
+  if (isBudgetExceeded()) {
+    return {
+      answer: "AI assistance is temporarily unavailable due to usage limits. Please use the Book / Enquire form or the WhatsApp button to reach our team directly.",
+      provider: "local-knowledge",
+    };
+  }
+
   const prior = history.slice(-8);
   if (prior.at(-1)?.role === "user" && prior.at(-1)?.content.trim() === message.trim()) prior.pop();
 
@@ -165,7 +202,7 @@ export async function answerAssistant(message: string, history: HistoryMessage[]
         return { answer: `I still need: ${missing.join(", ")}. This remains an unconfirmed request until staff reviews it.`, provider: "openai" };
       }
 
-      const { record, emailSent } = await submitEnquiry(validated.data);
+      const { record, emailSent } = await submitEnquiry({ ...validated.data, source: "assistant", consentVersion: "v1" });
       return {
         answer: `Your enquiry has been submitted for staff review. Reference: ${record.reference}. This is an acknowledgement, not a confirmed booking, price or transaction.${emailSent ? " An acknowledgement email has been sent." : " Please keep the reference for follow-up."}`,
         provider: "openai",
@@ -174,6 +211,8 @@ export async function answerAssistant(message: string, history: HistoryMessage[]
     }
 
     const answer = response.output_text.trim().slice(0, 1800);
+    // Record estimated token usage (rough approximation based on output length)
+    recordTokenUsage(Math.ceil(answer.length / 4) + 200);
     if (!answer || isUnsafeAnswer(answer)) return { answer: safetyReply, provider: "openai" };
     return { answer, provider: "openai" };
   } catch (error) {

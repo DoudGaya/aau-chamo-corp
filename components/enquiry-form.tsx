@@ -1,7 +1,7 @@
 "use client";
 
-import { AlertCircle, CheckCircle2, LoaderCircle, LockKeyhole } from "lucide-react";
-import { FormEvent, useMemo, useState } from "react";
+import { AlertCircle, CheckCircle2, Copy, LoaderCircle, LockKeyhole, MessageCircle } from "lucide-react";
+import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 
 const types = [
   ["flight", "Flight booking"],
@@ -59,11 +59,25 @@ const specificFields: Record<string, { name: string; label: string; type?: strin
   ],
 };
 
+function whatsappHref(reference: string) {
+  const number = (process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "").replace(/\D/g, "");
+  const text = encodeURIComponent(`Hello A.A.U Chamo, my enquiry reference is ${reference}. I would like to follow up on my request.`);
+  if (!number) return `/contact?channel=whatsapp&ref=${encodeURIComponent(reference)}`;
+  return `https://wa.me/${number}?text=${text}`;
+}
+
 export function EnquiryForm({ defaultType = "cargo" }: { defaultType?: string }) {
   const safeDefault = types.some(([value]) => value === defaultType) ? defaultType : "cargo";
   const [type, setType] = useState(safeDefault);
   const [state, setState] = useState<SubmitState>({ status: "idle" });
+  const [copied, setCopied] = useState(false);
   const fields = useMemo(() => specificFields[type] || specificFields.general, [type]);
+
+  // Stable idempotency token for this form instance — survives re-renders but resets on success
+  const idemToken = useRef<string>(crypto.randomUUID());
+
+  // Reset type when defaultType prop changes (e.g. navigating between service pages)
+  useEffect(() => { setType(safeDefault); }, [safeDefault]);
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -84,6 +98,7 @@ export function EnquiryForm({ defaultType = "cargo" }: { defaultType?: string })
           message: String(form.get("message") || ""),
           company: String(form.get("company") || ""),
           consent: form.get("consent") === "on",
+          _idem: idemToken.current,
           details,
         }),
       });
@@ -91,9 +106,22 @@ export function EnquiryForm({ defaultType = "cargo" }: { defaultType?: string })
       if (!response.ok || !body.ok || !body.reference) throw new Error(body.error || "Your enquiry could not be submitted.");
       formElement.reset();
       setType(safeDefault);
+      setCopied(false);
+      // Rotate idempotency token so the "Send another" path gets a fresh one
+      idemToken.current = crypto.randomUUID();
       setState({ status: "success", reference: body.reference, emailSent: body.emailSent, message: "Your request has been received for staff review." });
     } catch (error) {
       setState({ status: "error", message: error instanceof Error ? error.message : "Your enquiry could not be submitted." });
+    }
+  }
+
+  async function copyReference(reference: string) {
+    try {
+      await navigator.clipboard.writeText(reference);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2500);
+    } catch {
+      // Fallback: select the text manually — no-op if clipboard API unavailable
     }
   }
 
@@ -119,12 +147,42 @@ export function EnquiryForm({ defaultType = "cargo" }: { defaultType?: string })
         <div className="field sr-only" aria-hidden="true"><label htmlFor="company">Company website</label><input id="company" name="company" tabIndex={-1} autoComplete="off" /></div>
         <label className="form-note full"><input type="checkbox" name="consent" required /> <span>I agree that A.A.U Chamo may use these details to process and follow up this enquiry.</span></label>
       </div>
-      {state.status === "success" ? (
+
+      {state.status === "success" && state.reference ? (
         <div className="reference-box" role="status">
-          <strong>{state.reference}</strong>
-          <span>{state.message} {state.emailSent ? "An acknowledgement has been sent to your email." : "Keep this reference for follow-up."}</span>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
+            <div>
+              <p className="muted" style={{ fontSize: 12, margin: "0 0 4px 0", textTransform: "uppercase", letterSpacing: "0.05em" }}>Your reference</p>
+              <strong style={{ fontFamily: "monospace", fontSize: 22, letterSpacing: "0.08em" }}>{state.reference}</strong>
+            </div>
+            <button
+              type="button"
+              className="button ghost"
+              style={{ fontSize: 13, padding: "6px 14px" }}
+              onClick={() => copyReference(state.reference!)}
+              aria-label="Copy reference to clipboard"
+            >
+              <Copy size={15} /> {copied ? "Copied!" : "Copy"}
+            </button>
+          </div>
+          <p style={{ margin: "12px 0 4px", fontSize: 14 }}>
+            {state.message} {state.emailSent ? "An acknowledgement has been sent to your email." : "Keep this reference for all follow-up."}
+          </p>
+          <p className="muted" style={{ fontSize: 12, margin: "0 0 16px" }}>
+            This is not a confirmed booking, price or transaction. Staff will review and contact you.
+          </p>
+          <a
+            className="button ghost"
+            href={whatsappHref(state.reference)}
+            target="_blank"
+            rel="noreferrer"
+            style={{ fontSize: 13 }}
+          >
+            <MessageCircle size={15} /> Follow up on WhatsApp
+          </a>
         </div>
       ) : null}
+
       {state.status === "error" ? <div className="form-note error" role="alert"><AlertCircle size={18} /> {state.message}</div> : null}
       <div className="form-actions">
         <span className="muted" style={{ fontSize: 12, display: "flex", alignItems: "center", gap: 8 }}><LockKeyhole size={15} /> Secure request · no automatic booking confirmation</span>
@@ -135,3 +193,4 @@ export function EnquiryForm({ defaultType = "cargo" }: { defaultType?: string })
     </form>
   );
 }
+

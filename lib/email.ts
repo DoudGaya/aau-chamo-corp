@@ -93,11 +93,11 @@ export async function notifyEnquiry(record: EnquiryRecord) {
 
         <h3 style="color: #111214; font-size: 16px; margin: 0 0 16px 0; border-bottom: 1px solid #eaeaea; padding-bottom: 8px;">Enquiry Specifications</h3>
         <table style="width: 100%; border-collapse: collapse; margin-bottom: 32px;">
-          ${Object.entries(record.details).filter(([, value]) => value).map(([key, value]) => \`
+          ${Object.entries(record.details).filter(([, value]) => value).map(([key, value]) => `
           <tr>
-            <td style="padding: 10px 0; border-bottom: 1px solid #f0f0f0; color: #666666; width: 35%; font-size: 14px;">\${escapeHtml(key)}</td>
-            <td style="padding: 10px 0; border-bottom: 1px solid #f0f0f0; color: #111214; font-weight: 600; font-size: 14px;">\${escapeHtml(value)}</td>
-          </tr>\`).join("")}
+            <td style="padding: 10px 0; border-bottom: 1px solid #f0f0f0; color: #666666; width: 35%; font-size: 14px;">${escapeHtml(key)}</td>
+            <td style="padding: 10px 0; border-bottom: 1px solid #f0f0f0; color: #111214; font-weight: 600; font-size: 14px;">${escapeHtml(value)}</td>
+          </tr>`).join("")}
         </table>
 
         <h3 style="color: #111214; font-size: 16px; margin: 0 0 12px 0;">Additional Message</h3>

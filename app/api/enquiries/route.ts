@@ -7,6 +7,7 @@ export const runtime = "nodejs";
 const schema = enquiryInputSchema.extend({
   consent: z.literal(true),
   company: z.string().max(0).optional().default(""),
+  _idem: z.string().uuid().optional(),
 });
 
 const buckets = new Map<string, { count: number; resetAt: number }>();
@@ -40,6 +41,9 @@ export async function POST(request: Request) {
       phone: input.phone,
       message: input.message,
       details: input.details,
+      source: "web",
+      consentVersion: "v1",
+      idempotencyToken: input._idem,
     });
 
     return Response.json({ ok: true, reference: record.reference, status: record.status, emailSent }, { status: 201 });

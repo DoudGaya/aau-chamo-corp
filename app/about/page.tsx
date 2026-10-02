@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
-import { Award, Check, Compass, Handshake, ShieldCheck, Target } from "lucide-react";
+import { Award, Check, Compass, Handshake, ShieldCheck, Target, UserCircle2 } from "lucide-react";
 import { CtaBand } from "@/components/cta-band";
 import { PageHero } from "@/components/page-hero";
-import { branches } from "@/lib/content";
+import { aboutContent, branches } from "@/lib/content";
 
 export const metadata: Metadata = { title: "About Us", description: "Company profile, values, network and service approach of A.A.U Chamo." };
 
@@ -42,7 +42,27 @@ export default function AboutPage() {
       </section>
       <section className="section">
         <div className="shell">
-          <div className="section-heading"><div><span className="eyebrow">Branches & stations</span><h2 className="headline">Coverage where customers need it.</h2></div><p className="lede">Contact details are maintained centrally so customers can be routed to the appropriate station.</p></div>
+          <span className="eyebrow">Leadership</span>
+          <h2 className="headline" style={{ marginBottom: 48 }}>The team behind every service decision.</h2>
+          <div className="process-grid">
+            {aboutContent.management.map((person) => {
+              const isPending = person.name.startsWith("[");
+              return (
+                <div className="process-step" key={person.title} style={isPending ? { border: "2px dashed #e5a000", opacity: 0.8 } : undefined}>
+                  <span className="step-no"><UserCircle2 size={17} /></span>
+                  <h3>{isPending ? "Awaiting approved content" : person.name}</h3>
+                  <p style={{ fontWeight: 600, marginBottom: 6 }}>{person.title}</p>
+                  {!isPending && <p>{person.bio}</p>}
+                  {isPending && <p className="muted" style={{ fontSize: 12 }}>This entry will be updated with approved information before publication.</p>}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+      <section className="section">
+        <div className="shell">
+          <div className="section-heading"><div><span className="eyebrow">Branches &amp; stations</span><h2 className="headline">Coverage where customers need it.</h2></div><p className="lede">Contact details are maintained centrally so customers can be routed to the appropriate station.</p></div>
           <div className="service-index">{branches.map((branch, index) => <div className="service-row" key={branch.city}><span className="num">{String(index + 1).padStart(2, "0")}</span><h3>{branch.city}</h3><p>{branch.role}</p><Award size={20} /></div>)}</div>
         </div>
       </section>

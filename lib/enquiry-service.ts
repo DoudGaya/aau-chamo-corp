@@ -4,8 +4,17 @@ import type { EnquiryInput } from "@/lib/enquiries";
 import { createEnquiry, updateNotification } from "@/lib/enquiries";
 import { notifyEnquiry } from "@/lib/email";
 
-export async function submitEnquiry(input: EnquiryInput) {
-  const record = await createEnquiry(input);
+export type SubmitEnquiryInput = EnquiryInput & {
+  idempotencyToken?: string;
+  source?: "web" | "assistant";
+};
+
+export async function submitEnquiry(input: SubmitEnquiryInput) {
+  const { record, isDuplicate } = await createEnquiry(input);
+
+  // Do not re-send notifications for duplicate (retry) submissions
+  if (isDuplicate) return { record, emailSent: false };
+
   let emailSent = false;
 
   try {
@@ -21,3 +30,4 @@ export async function submitEnquiry(input: EnquiryInput) {
 
   return { record, emailSent };
 }
+

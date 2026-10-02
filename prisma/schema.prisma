@@ -4,7 +4,6 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
 model WebsiteEnquiry {
@@ -18,12 +17,56 @@ model WebsiteEnquiry {
   details           Json     @default("{}")
   status            String   @default("New") @db.VarChar(40)
   department        String   @db.VarChar(80)
+  source            String   @default("web") @db.VarChar(20)
+  consentVersion    String   @default("v1") @map("consent_version") @db.VarChar(10)
+  consentAt         DateTime @default(now()) @map("consent_at") @db.Timestamptz(6)
+  idempotencyHash   String?  @unique @map("idempotency_hash") @db.VarChar(64)
   notificationState String   @default("Pending") @map("notification_state") @db.VarChar(40)
   notificationError String?  @map("notification_error") @db.Text
   createdAt         DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt         DateTime @default(now()) @map("updated_at") @db.Timestamptz(6)
 
+  statusEvents EnquiryStatusEvent[]
+
   @@index([customerEmail, reference], name: "website_enquiries_email_reference_idx")
   @@index([status, createdAt(sort: Desc)], name: "website_enquiries_status_created_idx")
   @@map("website_enquiries")
+}
+
+/// Append-only audit log of every status transition for an enquiry.
+model EnquiryStatusEvent {
+  id                BigInt   @id @default(autoincrement())
+  enquiryRef        String   @map("enquiry_ref") @db.VarChar(32)
+  oldStatus         String?  @map("old_status") @db.VarChar(40)
+  newStatus         String   @map("new_status") @db.VarChar(40)
+  /// "system", "api", or "staff:<identifier>"
+  actor             String   @db.VarChar(80)
+  note              String?  @db.Text
+  isCustomerVisible Boolean  @default(false) @map("is_customer_visible")
+  createdAt         DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  enquiry WebsiteEnquiry @relation(fields: [enquiryRef], references: [reference], onDelete: Cascade)
+
+  @@index([enquiryRef], name: "enquiry_status_events_ref_idx")
+  @@map("enquiry_status_events")
+}
+
+/// Outbox table for reliable email delivery with retry tracking.
+model NotificationOutbox {
+  id            BigInt    @id @default(autoincrement())
+  enquiryRef    String    @map("enquiry_ref") @db.VarChar(32)
+  /// "email-customer" | "email-staff"
+  channel       String    @db.VarChar(20)
+  recipient     String    @db.VarChar(254)
+  templateId    String    @map("template_id") @db.VarChar(40)
+  attemptCount  Int       @default(0) @map("attempt_count")
+  nextRetryAt   DateTime? @map("next_retry_at") @db.Timestamptz(6)
+  /// "Pending" | "Sent" | "Failed"
+  deliveryState String    @default("Pending") @map("delivery_state") @db.VarChar(20)
+  providerMsgId String?   @map("provider_msg_id") @db.VarChar(100)
+  safeErrorCode String?   @map("safe_error_code") @db.VarChar(20)
+  createdAt     DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt     DateTime  @default(now()) @map("updated_at") @db.Timestamptz(6)
+  @@index([deliveryState, nextRetryAt], name: "notification_outbox_retry_idx")
+  @@map("notification_outbox")
 }

@@ -2,7 +2,25 @@ import { getEnquiry } from "@/lib/enquiries";
 
 const allowedStatuses = new Set(["Received", "Processing", "Dispatched", "In Transit", "Arrived", "Ready for Collection", "Delivered"]);
 
+const trackingBuckets = new Map<string, { count: number; resetAt: number }>();
+
+function isRateLimited(request: Request): boolean {
+  const key = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "local";
+  const now = Date.now();
+  const bucket = trackingBuckets.get(key);
+  if (!bucket || bucket.resetAt < now) {
+    trackingBuckets.set(key, { count: 1, resetAt: now + 5 * 60_000 });
+    return false;
+  }
+  bucket.count += 1;
+  return bucket.count > 20;
+}
+
 export async function GET(_request: Request, context: { params: Promise<{ reference: string }> }) {
+  if (isRateLimited(_request)) {
+    return Response.json({ error: "Too many requests. Please wait before checking again." }, { status: 429 });
+  }
+
   const { reference: rawReference } = await context.params;
   const reference = rawReference.trim().toUpperCase().slice(0, 40);
   if (!/^[A-Z0-9-]{6,40}$/.test(reference)) return Response.json({ error: "Enter a valid tracking or enquiry reference." }, { status: 422 });

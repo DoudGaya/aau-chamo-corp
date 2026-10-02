@@ -198,3 +198,25 @@ export const branches = [
 export function getService(slug: string) {
   return services.find((service) => service.slug === slug);
 }
+
+// TODO: Replace all management entries below with approved content from A.A.U. Chamo management.
+// Do NOT publish unverified names, titles or biographies.
+export const aboutContent = {
+  management: [
+    {
+      name: "[Name pending approval]",
+      title: "Managing Director",
+      bio: "[Biography pending approval from A.A.U. Chamo management. Do not publish placeholder text.]",
+    },
+    {
+      name: "[Name pending approval]",
+      title: "Head of Cargo & Operations",
+      bio: "[Biography pending approval from A.A.U. Chamo management. Do not publish placeholder text.]",
+    },
+    {
+      name: "[Name pending approval]",
+      title: "Head of Travel Services",
+      bio: "[Biography pending approval from A.A.U. Chamo management. Do not publish placeholder text.]",
+    },
+  ] as Array<{ name: string; title: string; bio: string }>,
+};

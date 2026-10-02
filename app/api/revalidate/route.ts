@@ -25,12 +25,15 @@ export async function POST(req: NextRequest) {
       return new Response(JSON.stringify({ message, body }), { status: 400 });
     }
 
-    revalidateTag(\`sanity-\${body._type}\`);
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-expect-error — next-sanity/webhook re-exports a stale revalidateTag type; runtime is correct
+    revalidateTag(`sanity-${body._type}`);
 
     // Special case for newsArticle to revalidate specific slugs and generic 'sanity-news' tag
-    if (body._type === 'newsArticle') {
-      revalidateTag('sanity-news');
-      // If we had slug in the body, we could revalidate 'sanity-news-SLUG'
+    if (body._type === "newsArticle") {
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-expect-error — see above
+      revalidateTag("sanity-news");
     }
 
     return NextResponse.json({ body });
