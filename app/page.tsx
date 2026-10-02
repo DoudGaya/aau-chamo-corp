@@ -8,9 +8,24 @@ import { getEvents, getNewsArticles, sanityImageUrl, type EventItem, type NewsAr
 import { createPageMetadata } from "@/lib/seo";
 
 export const metadata = createPageMetadata({
-  title: "Cargo, Travel & Business Services",
-  description: "Cargo logistics, flight reservations, courier delivery, visa support and international business services across Nigeria and beyond.",
+  title: "Cargo Logistics, Flight Reservations & Agency Services Nigeria",
+  description:
+    "Nigeria's trusted corporate gateway for international air and sea cargo freight forwarding, domestic & global flight bookings, Umrah pilgrimage travel packages, and business agency services in Kano and across Nigeria.",
   path: "/",
+  keywords: [
+    "A.A.U Chamo",
+    "AAU Chamo",
+    "cargo logistics Nigeria",
+    "air cargo Kano",
+    "flight reservations Kano",
+    "airline booking Kano Nigeria",
+    "Umrah packages Kano Nigeria",
+    "freight forwarding Nigeria",
+    "courier delivery Kano",
+    "clearing and forwarding agency Nigeria",
+    "Mallam Aminu Kano International Airport cargo",
+    "international business agency Kano",
+  ],
 });
 
 export default async function Home() {

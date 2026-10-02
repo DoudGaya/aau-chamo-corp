@@ -6,13 +6,50 @@ import { PageHero } from "@/components/page-hero";
 import { aboutContent, branches } from "@/lib/content";
 import { getStaffMembers, sanityImageUrl } from "@/lib/sanity";
 
-export const metadata: Metadata = { title: "About Us", description: "Company profile, values, network and service approach of A.A.U Chamo." };
+import { breadcrumbJsonLd, createPageMetadata } from "@/lib/seo";
+import { siteConfig } from "@/lib/site";
+
+export const metadata: Metadata = createPageMetadata({
+  title: "About A.A.U Chamo | Cargo, Aviation & International Business Agency Nigeria",
+  description:
+    "Company profile, corporate leadership, operational stations, and service philosophy of A.A.U Chamo International Business Agency Services Limited, headquartered in Kano, Nigeria.",
+  path: "/about",
+  keywords: [
+    "about AAU Chamo",
+    "AAU Chamo Kano",
+    "AAU Chamo leadership",
+    "cargo company profile Kano",
+    "aviation and travel agency Kano",
+    "international business agency Nigeria",
+  ],
+});
 
 export default async function AboutPage() {
   const staff = await getStaffMembers();
 
+  const structuredData = [
+    breadcrumbJsonLd([
+      { name: "Home", path: "/" },
+      { name: "About Us", path: "/about" },
+    ]),
+    {
+      "@context": "https://schema.org",
+      "@type": "AboutPage",
+      "@id": `${siteConfig.url}/about/#webpage`,
+      url: `${siteConfig.url}/about`,
+      name: "About A.A.U Chamo",
+      description: "Company background, mission, and leadership of A.A.U Chamo International Business Agency Services Limited.",
+      isPartOf: { "@id": `${siteConfig.url}/#website` },
+      about: { "@id": `${siteConfig.url}/#organization` },
+    },
+  ];
+
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData).replace(/</g, "\\u003c") }}
+      />
       <PageHero eyebrow="Company" title="Built to connect people, cargo and opportunity." description="A.A.U Chamo brings logistics, aviation, travel and business support together through disciplined service and direct customer care." meta={["Nigeria-based", "Multi-service", "Customer-focused"]} />
       <section className="section">
         <div className="shell content-grid">

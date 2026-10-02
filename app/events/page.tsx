@@ -4,22 +4,66 @@ import Link from "next/link";
 import { Calendar, MapPin, ExternalLink, ArrowRight } from "lucide-react";
 import { PageHero } from "@/components/page-hero";
 import { CtaBand } from "@/components/cta-band";
-import { createPageMetadata } from "@/lib/seo";
+import { breadcrumbJsonLd, createPageMetadata } from "@/lib/seo";
 import { getEvents, sanityImageUrl } from "@/lib/sanity";
+import { siteConfig } from "@/lib/site";
 
 export const revalidate = 300;
 
 export const metadata = createPageMetadata({
-  title: "Events & Announcements",
-  description: "Corporate seminars, logistics forums, trade summits and training activities by A.A.U Chamo.",
+  title: "Corporate Summits, Trade Briefings & Logistics Events | A.A.U Chamo",
+  description:
+    "Upcoming trade summits, aviation logistics workshops, pilgrimage travel briefings and corporate events hosted by A.A.U Chamo in Nigeria.",
   path: "/events",
+  keywords: [
+    "AAU Chamo events",
+    "logistics summits Nigeria",
+    "trade briefings Kano",
+    "aviation workshops Nigeria",
+    "business events Kano",
+  ],
 });
 
 export default async function EventsPage() {
   const events = await getEvents();
 
+  const structuredData = [
+    breadcrumbJsonLd([
+      { name: "Home", path: "/" },
+      { name: "Events", path: "/events" },
+    ]),
+    ...events.map((ev) => ({
+      "@context": "https://schema.org",
+      "@type": "Event",
+      name: ev.title,
+      description: ev.title,
+      startDate: ev.dateRange?.startDate,
+      endDate: ev.dateRange?.endDate || ev.dateRange?.startDate,
+      eventStatus: "https://schema.org/EventScheduled",
+      eventAttendanceMode: "https://schema.org/OfflineEventAttendanceMode",
+      location: {
+        "@type": "Place",
+        name: ev.location || "A.A.U Chamo Conference Facility, Kano",
+        address: {
+          "@type": "PostalAddress",
+          streetAddress: siteConfig.address,
+          addressLocality: "Kano",
+          addressCountry: "NG",
+        },
+      },
+      organizer: {
+        "@id": `${siteConfig.url}/#organization`,
+      },
+      image: sanityImageUrl(ev.coverImage, 1200, 630) || `${siteConfig.url}/cargo-operations-hero.png`,
+    })),
+  ];
+
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData).replace(/</g, "\\u003c") }}
+      />
       <PageHero
         eyebrow="Events & Summits"
         title="Connecting industry leaders and global trade."

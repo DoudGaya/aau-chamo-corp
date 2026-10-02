@@ -30,6 +30,13 @@ export async function generateMetadata({ params }: NewsArticlePageProps) {
     type: "article",
     publishedTime: article.publishedAt,
     modifiedTime: article.updatedAt,
+    keywords: [
+      article.category,
+      "AAU Chamo",
+      "Nigeria logistics",
+      "aviation Nigeria",
+      article.title,
+    ],
   });
 }
 

@@ -2,15 +2,23 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { CtaBand } from "@/components/cta-band";
 import { PageHero } from "@/components/page-hero";
-import { createPageMetadata } from "@/lib/seo";
+import { breadcrumbJsonLd, createPageMetadata } from "@/lib/seo";
 import { getNewsArticles } from "@/lib/sanity";
 
 export const revalidate = 300;
 
 export const metadata = createPageMetadata({
-  title: "News & Updates",
-  description: "A.A.U Chamo service guidance, company announcements and operational updates.",
+  title: "News, Operational Updates & Trade Insights | A.A.U Chamo",
+  description:
+    "Latest company announcements, air cargo shipping schedules, aviation insights, Umrah updates and trade guidance from A.A.U Chamo in Kano, Nigeria.",
   path: "/news",
+  keywords: [
+    "AAU Chamo news",
+    "aviation updates Nigeria",
+    "cargo shipping news Kano",
+    "Umrah travel announcements",
+    "Kano airport logistics news",
+  ],
 });
 
 function dateLabel(value?: string) {
@@ -21,8 +29,19 @@ function dateLabel(value?: string) {
 export default async function NewsPage() {
   const articles = await getNewsArticles();
 
+  const structuredData = [
+    breadcrumbJsonLd([
+      { name: "Home", path: "/" },
+      { name: "News & Updates", path: "/news" },
+    ]),
+  ];
+
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData).replace(/</g, "\\u003c") }}
+      />
       <PageHero eyebrow="News & updates" title="Announcements, guidance and company activity." description="A clear record of service information, new routes, partnerships, events and customer guidance." meta={["Company news", "Service guides", "Announcements"]} />
       <section className="section">
         <div className="shell news-grid">

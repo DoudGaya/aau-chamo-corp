@@ -3,14 +3,49 @@ import { Clock3, Mail, MapPin, MessageCircle, Phone } from "lucide-react";
 import { EnquiryForm } from "@/components/enquiry-form";
 import { PageHero } from "@/components/page-hero";
 import { branches } from "@/lib/content";
+import { breadcrumbJsonLd, createPageMetadata } from "@/lib/seo";
 import { siteConfig, whatsappHref } from "@/lib/site";
 
-export const metadata: Metadata = { title: "Contact Us", description: "Contact A.A.U Chamo customer service, cargo operations and travel support." };
+export const metadata: Metadata = createPageMetadata({
+  title: "Contact A.A.U Chamo | Head Office Kano, Nigeria | Customer Support",
+  description:
+    "Official contact address, phone numbers, email, WhatsApp desk, and Google Maps location for A.A.U Chamo International Business Agency Services Limited in Kano, Nigeria.",
+  path: "/contact",
+  keywords: [
+    "contact AAU Chamo",
+    "AAU Chamo phone number",
+    "AAU Chamo email",
+    "AAU Chamo address Kano",
+    "cargo office Kano airport",
+    "travel agency contact Kano",
+  ],
+});
 
 export default function ContactPage() {
   const whatsapp = whatsappHref();
+  const structuredData = [
+    breadcrumbJsonLd([
+      { name: "Home", path: "/" },
+      { name: "Contact Us", path: "/contact" },
+    ]),
+    {
+      "@context": "https://schema.org",
+      "@type": "ContactPage",
+      "@id": `${siteConfig.url}/contact/#webpage`,
+      url: `${siteConfig.url}/contact`,
+      name: "Contact A.A.U Chamo",
+      description: "Customer service, cargo operations desk, and travel support contact information.",
+      isPartOf: { "@id": `${siteConfig.url}/#website` },
+      mainEntity: { "@id": `${siteConfig.url}/#organization` },
+    },
+  ];
+
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData).replace(/</g, "\\u003c") }}
+      />
       <PageHero eyebrow="Contact us" title="Reach the right team without the runaround." description="Use the secure form for structured service requests, or contact customer service through the configured official channels." meta={["Customer service", "Cargo operations", "Travel desk"]} />
       <section className="section">
         <div className="shell contact-grid">
