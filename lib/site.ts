@@ -29,5 +29,7 @@ export const navigation = [
   { label: "Flight & Travel", href: "/flight-travel" },
   { label: "Umrah", href: "/umrah-ziyarah" },
   { label: "News", href: "/news" },
+  { label: "Events", href: "/events" },
+  { label: "Gallery", href: "/gallery" },
   { label: "Contact", href: "/contact" },
 ];

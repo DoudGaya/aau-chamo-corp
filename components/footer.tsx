@@ -15,6 +15,7 @@ export function Footer() {
           <h3>Company</h3>
           <Link href="/about">About us</Link>
           <Link href="/news">News & updates</Link>
+          <Link href="/events">Events & summits</Link>
           <Link href="/gallery">Gallery</Link>
           <Link href="/contact">Contact</Link>
         </div>

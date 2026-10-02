@@ -1,8 +1,9 @@
 import "server-only";
 
 import { createClient, type SanityClient } from "@sanity/client";
-import imageUrlBuilder from "@sanity/image-url";
 import { newsItems } from "@/lib/content";
+import type { NewsArticle, GalleryItem, StaffMember, EventItem } from "./sanity-image";
+export * from "./sanity-image";
 
 const projectId = process.env.NEXT_PUBLIC_SANITY_PROJECT_ID?.trim();
 const dataset = process.env.NEXT_PUBLIC_SANITY_DATASET?.trim() || "production";
@@ -20,39 +21,6 @@ const client: SanityClient | null = sanityConfigured
       perspective: "published",
     })
   : null;
-
-const imageBuilder = client ? imageUrlBuilder(client) : null;
-
-export type SanityImage = {
-  asset?: { _ref?: string; _type?: string };
-  alt?: string;
-  hotspot?: unknown;
-  crop?: unknown;
-};
-
-export type NewsArticle = {
-  _id: string;
-  title: string;
-  slug: string;
-  excerpt: string;
-  category: string;
-  publishedAt?: string;
-  updatedAt?: string;
-  featured?: boolean;
-  mainImage?: SanityImage;
-  body?: unknown[];
-  seoTitle?: string;
-  seoDescription?: string;
-};
-
-export type GalleryItem = {
-  _id: string;
-  title: string;
-  category: string;
-  caption?: string;
-  occurredAt?: string;
-  image?: SanityImage;
-};
 
 const fallbackArticles: NewsArticle[] = newsItems.map((item, index) => ({
   _id: `fallback-news-${index + 1}`,
@@ -100,10 +68,6 @@ async function safeFetch<T>(query: string, params: Record<string, unknown>, fall
   }
 }
 
-export function sanityImageUrl(source: SanityImage | undefined, width: number, height: number) {
-  if (!imageBuilder || !source?.asset) return null;
-  return imageBuilder.image(source).width(width).height(height).fit("crop").auto("format").url();
-}
 
 export async function getNewsArticles(): Promise<NewsArticle[]> {
   return safeFetch(
@@ -134,3 +98,51 @@ export async function getGalleryItems(): Promise<GalleryItem[]> {
     ["sanity-gallery"],
   );
 }
+
+export async function getStaffMembers(): Promise<StaffMember[]> {
+  return safeFetch(
+    `*[_type == "staffMember"] | order(hierarchyOrder asc, _createdAt asc) {
+      _id, name, role, department, bio, portrait, hierarchyOrder, email, linkedinUrl
+    }`,
+    {},
+    [],
+    ["sanity-staff", "sanity-staffMember"],
+  );
+}
+
+export async function getEvents(): Promise<EventItem[]> {
+  return safeFetch(
+    `*[_type == "event"] | order(dateRange.startDate asc, _createdAt desc) {
+      _id,
+      title,
+      "slug": slug.current,
+      dateRange,
+      location,
+      coverImage,
+      description,
+      registrationLink
+    }`,
+    {},
+    [],
+    ["sanity-event"],
+  );
+}
+
+export async function getEvent(slug: string): Promise<EventItem | null> {
+  return safeFetch(
+    `*[_type == "event" && slug.current == $slug][0] {
+      _id,
+      title,
+      "slug": slug.current,
+      dateRange,
+      location,
+      coverImage,
+      description,
+      registrationLink
+    }`,
+    { slug },
+    null,
+    ["sanity-event", `sanity-event-${slug}`],
+  );
+}
+

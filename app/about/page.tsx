@@ -1,12 +1,16 @@
 import type { Metadata } from "next";
-import { Award, Check, Compass, Handshake, ShieldCheck, Target, UserCircle2 } from "lucide-react";
+import Image from "next/image";
+import { Award, Check, Compass, Globe, Handshake, Mail, ShieldCheck, Target, UserCircle2 } from "lucide-react";
 import { CtaBand } from "@/components/cta-band";
 import { PageHero } from "@/components/page-hero";
 import { aboutContent, branches } from "@/lib/content";
+import { getStaffMembers, sanityImageUrl } from "@/lib/sanity";
 
 export const metadata: Metadata = { title: "About Us", description: "Company profile, values, network and service approach of A.A.U Chamo." };
 
-export default function AboutPage() {
+export default async function AboutPage() {
+  const staff = await getStaffMembers();
+
   return (
     <>
       <PageHero eyebrow="Company" title="Built to connect people, cargo and opportunity." description="A.A.U Chamo brings logistics, aviation, travel and business support together through disciplined service and direct customer care." meta={["Nigeria-based", "Multi-service", "Customer-focused"]} />
@@ -42,22 +46,64 @@ export default function AboutPage() {
       </section>
       <section className="section">
         <div className="shell">
-          <span className="eyebrow">Leadership</span>
+          <span className="eyebrow">Leadership &amp; Management</span>
           <h2 className="headline" style={{ marginBottom: 48 }}>The team behind every service decision.</h2>
-          <div className="process-grid">
-            {aboutContent.management.map((person) => {
-              const isPending = person.name.startsWith("[");
-              return (
-                <div className="process-step" key={person.title} style={isPending ? { border: "2px dashed #e5a000", opacity: 0.8 } : undefined}>
-                  <span className="step-no"><UserCircle2 size={17} /></span>
-                  <h3>{isPending ? "Awaiting approved content" : person.name}</h3>
-                  <p style={{ fontWeight: 600, marginBottom: 6 }}>{person.title}</p>
-                  {!isPending && <p>{person.bio}</p>}
-                  {isPending && <p className="muted" style={{ fontSize: 12 }}>This entry will be updated with approved information before publication.</p>}
-                </div>
-              );
-            })}
-          </div>
+          
+          {staff.length > 0 ? (
+            <div className="team-grid">
+              {staff.map((person) => {
+                const photo = sanityImageUrl(person.portrait, 600, 600);
+                return (
+                  <div className="team-card" key={person._id}>
+                    <div className="team-card-image">
+                      {photo ? (
+                        <Image src={photo} alt={person.portrait?.alt || person.name} fill sizes="(max-width: 760px) 100vw, 33vw" style={{ objectFit: "cover" }} />
+                      ) : (
+                        <div className="team-card-placeholder">
+                          <UserCircle2 size={54} strokeWidth={1.5} />
+                        </div>
+                      )}
+                      {person.department ? (
+                        <span className="team-dept-badge">{person.department.replace(/_/g, " ")}</span>
+                      ) : null}
+                    </div>
+                    <div className="team-card-body">
+                      <h3>{person.name}</h3>
+                      <p className="team-role">{person.role}</p>
+                      {person.bio ? <p className="team-bio">{person.bio}</p> : null}
+                      <div className="team-card-links">
+                        {person.email ? (
+                          <a href={`mailto:${person.email}`} title={`Email ${person.name}`} className="team-link">
+                            <Mail size={16} /> <span>{person.email}</span>
+                          </a>
+                        ) : null}
+                        {person.linkedinUrl ? (
+                          <a href={person.linkedinUrl} target="_blank" rel="noopener noreferrer" title="LinkedIn Profile" className="team-link">
+                            <Globe size={16} /> <span>LinkedIn</span>
+                          </a>
+                        ) : null}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="process-grid">
+              {aboutContent.management.map((person) => {
+                const isPending = person.name.startsWith("[");
+                return (
+                  <div className="process-step" key={person.title} style={isPending ? { border: "2px dashed #e5a000", opacity: 0.8 } : undefined}>
+                    <span className="step-no"><UserCircle2 size={17} /></span>
+                    <h3>{isPending ? "Awaiting approved content" : person.name}</h3>
+                    <p style={{ fontWeight: 600, marginBottom: 6 }}>{person.title}</p>
+                    {!isPending && <p>{person.bio}</p>}
+                    {isPending && <p className="muted" style={{ fontSize: 12 }}>Manage leadership profiles anytime via the Sanity Content Studio.</p>}
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
       </section>
       <section className="section">

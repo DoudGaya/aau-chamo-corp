@@ -4,7 +4,16 @@ import { AlertCircle, LoaderCircle, Search } from "lucide-react";
 import { FormEvent, useEffect, useState } from "react";
 
 const statuses = ["Received", "Processing", "Dispatched", "In Transit", "Arrived", "Ready for Collection", "Delivered"];
-type Result = { reference: string; status: string; description: string; updatedAt?: string; source: "inventory" | "enquiry" };
+type Result = {
+  reference: string;
+  status: string;
+  description: string;
+  updatedAt?: string;
+  origin?: string;
+  destination?: string;
+  estimatedDelivery?: string;
+  source: "inventory" | "enquiry";
+};
 
 async function requestTracking(code: string) {
   const response = await fetch(`/api/tracking/${encodeURIComponent(code)}`, { cache: "no-store" });
@@ -54,14 +63,37 @@ export function TrackingPanel({ initialReference = "" }: { initialReference?: st
       {result ? (
         <div className="tracking-result" aria-live="polite">
           <div className="tracking-result-head">
-            <div><span className="news-meta">{result.source === "inventory" ? "Shipment status" : "Enquiry status"}</span><strong>{result.reference}</strong></div>
+            <div>
+              <span className="news-meta">{result.source === "inventory" ? "Logistics Shipment" : "Customer Enquiry"}</span>
+              <strong>{result.reference}</strong>
+            </div>
             <span>{result.updatedAt ? new Date(result.updatedAt).toLocaleString("en-NG") : "Current status"}</span>
           </div>
+
+          {(result.origin || result.destination || result.estimatedDelivery) ? (
+            <div style={{ display: "flex", flexWrap: "wrap", gap: "24px", padding: "16px 24px", background: "var(--paper)", borderBottom: "1px solid var(--line)", fontSize: "13px" }}>
+              {result.origin && <span><strong>Origin:</strong> {result.origin}</span>}
+              {result.destination && <span><strong>Destination:</strong> {result.destination}</span>}
+              {result.estimatedDelivery && <span><strong>Estimated Arrival:</strong> {new Date(result.estimatedDelivery).toLocaleDateString("en-NG", { month: "short", day: "numeric", year: "numeric" })}</span>}
+            </div>
+          ) : null}
+
           {result.source === "inventory" ? (
             <div className="status-timeline">
-              {statuses.map((status, index) => <div className={`status-node ${index < currentIndex ? "complete" : index === currentIndex ? "current" : ""}`} key={status}>{status}</div>)}
+              {statuses.map((status, index) => (
+                <div className={`status-node ${index < currentIndex ? "complete" : index === currentIndex ? "current" : ""}`} key={status}>
+                  {status}
+                </div>
+              ))}
             </div>
-          ) : <div style={{ padding: 28 }}><strong>{result.status}</strong><p className="muted">{result.description}</p></div>}
+          ) : (
+            <div style={{ padding: 28 }}>
+              <div style={{ display: "inline-block", background: "var(--red)", color: "white", padding: "4px 10px", fontSize: "12px", fontWeight: "700", marginBottom: "12px", textTransform: "uppercase", letterSpacing: ".05em" }}>
+                {result.status}
+              </div>
+              <p className="muted" style={{ margin: 0, lineHeight: 1.6 }}>{result.description}</p>
+            </div>
+          )}
         </div>
       ) : null}
       <div className="form-note"><AlertCircle size={17} /><span>Tracking results show customer-safe information only. An enquiry reference indicates request progress; it is not a confirmed shipment or booking.</span></div>

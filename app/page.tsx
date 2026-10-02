@@ -3,7 +3,8 @@ import Link from "next/link";
 import { ArrowRight, ArrowUpRight, Check, Plane, Route } from "lucide-react";
 import { CtaBand } from "@/components/cta-band";
 import { TrackingDock } from "@/components/tracking-dock";
-import { branches, newsItems, services } from "@/lib/content";
+import { branches, services } from "@/lib/content";
+import { getEvents, getNewsArticles, sanityImageUrl, type EventItem, type NewsArticle } from "@/lib/sanity";
 import { createPageMetadata } from "@/lib/seo";
 
 export const metadata = createPageMetadata({
@@ -12,7 +13,14 @@ export const metadata = createPageMetadata({
   path: "/",
 });
 
-export default function Home() {
+export default async function Home() {
+  const [articles, events] = await Promise.all([
+    getNewsArticles(),
+    getEvents(),
+  ]);
+  const recentArticles = articles.slice(0, 3);
+  const upcomingEvents = events.slice(0, 2);
+
   return (
     <>
       <section className="hero">
@@ -64,7 +72,7 @@ export default function Home() {
       <section className="cargo-feature section">
         <div className="shell cargo-grid">
           <div>
-            <span className="eyebrow">Cargo & logistics</span>
+            <span className="eyebrow">Cargo &amp; logistics</span>
             <h2 className="headline">Every route begins with precise information.</h2>
             <p className="lede">Airport-to-airport, door delivery, consolidation and interstate air logistics—structured for clear operational review.</p>
             <Link className="button light" href="/cargo-logistics">View cargo solutions <ArrowRight size={18} /></Link>
@@ -114,14 +122,60 @@ export default function Home() {
         </div>
       </section>
 
+      {upcomingEvents.length > 0 && (
+        <section className="section" style={{ background: "var(--paper)" }}>
+          <div className="shell">
+            <div className="section-heading">
+              <div>
+                <span className="eyebrow">Events &amp; Forums</span>
+                <h2 className="headline">Corporate summits and trade briefings.</h2>
+              </div>
+              <Link className="status-link" href="/events">View all events <ArrowRight size={17} /></Link>
+            </div>
+            <div className="events-grid">
+              {upcomingEvents.map((ev: EventItem) => {
+                const cover = sanityImageUrl(ev.coverImage, 800, 500);
+                const startDate = ev.dateRange?.startDate ? new Date(ev.dateRange.startDate).toLocaleDateString("en-NG", { weekday: "short", day: "numeric", month: "short", year: "numeric" }) : null;
+                return (
+                  <article className="event-card" key={ev._id}>
+                    <div className="event-card-media">
+                      {cover ? (
+                        <Image src={cover} alt={ev.coverImage?.alt || ev.title} fill sizes="(max-width: 760px) 100vw, 50vw" style={{ objectFit: "cover" }} />
+                      ) : null}
+                    </div>
+                    <div className="event-card-content">
+                      <div className="event-meta-tags">
+                        {startDate && <span className="event-date-tag">{startDate}</span>}
+                        {ev.location && <span className="event-location-tag">{ev.location}</span>}
+                      </div>
+                      <h3 className="event-title">{ev.title}</h3>
+                      <Link href="/events" className="button ghost" style={{ minHeight: "40px", fontSize: "13px", alignSelf: "flex-start", marginTop: "auto", border: "1px solid var(--line)" }}>
+                        <span>Learn More</span> <ArrowRight size={15} />
+                      </Link>
+                    </div>
+                  </article>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+      )}
+
       <section className="section">
         <div className="shell">
           <div className="section-heading">
-            <div><span className="eyebrow">News & guidance</span><h2 className="headline">Useful information, clearly stated.</h2></div>
+            <div><span className="eyebrow">News &amp; guidance</span><h2 className="headline">Useful information, clearly stated.</h2></div>
             <Link className="status-link" href="/news">View all updates <ArrowRight size={17} /></Link>
           </div>
           <div className="news-grid">
-            {newsItems.map((item, index) => <article className={`news-card ${index === 0 ? "featured" : ""}`} key={item.title}><span className="news-meta">{item.category} · {item.date}</span><h3>{item.title}</h3><p>{item.excerpt}</p></article>)}
+            {recentArticles.map((item: NewsArticle, index: number) => (
+              <article className={`news-card ${item.featured || index === 0 ? "featured" : ""}`} key={item._id}>
+                <span className="news-meta">{item.category} {item.publishedAt ? `· ${new Intl.DateTimeFormat("en-NG", { day: "numeric", month: "short", year: "numeric" }).format(new Date(item.publishedAt))}` : ""}</span>
+                <h3>{item.title}</h3>
+                <p>{item.excerpt}</p>
+                <Link className="status-link" href={`/news/${item.slug}`}>Read full update <ArrowRight size={15} /></Link>
+              </article>
+            ))}
           </div>
           <div className="form-note" style={{ marginTop: 24 }}><Check size={17} /> Every service statement is written to avoid unverified prices, availability or confirmations.</div>
         </div>
