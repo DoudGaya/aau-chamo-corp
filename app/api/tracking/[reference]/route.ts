@@ -39,17 +39,23 @@ export async function GET(_request: Request, context: { params: Promise<{ refere
       return Response.json({ error: "Enter a valid tracking number or enquiry reference." }, { status: 422 });
     }
 
-    // Default to the live ERP tracking endpoint if INVENTORY_TRACKING_API_URL is unset or points to outdated app.aauchamo.com
+    // Default to https://erp.aauchamo.com/api/tracking (or user-defined INVENTORY_TRACKING_API_URL)
     const envUrl = process.env.INVENTORY_TRACKING_API_URL?.trim();
     const inventoryEndpoint = (!envUrl || envUrl.includes("app.aauchamo.com"))
-      ? "https://aauchamo.vercel.app/api/tracking"
+      ? "https://erp.aauchamo.com/api/tracking"
       : envUrl;
 
     const apiToken = process.env.INVENTORY_API_TOKEN || "aau_erp_tracking_sec_2026_9f8d1c7a4b";
 
-    if (inventoryEndpoint) {
+    // Attempt primary inventory endpoint, with fallback to direct Vercel domain if custom domain DNS ever blips
+    const candidateEndpoints = [inventoryEndpoint];
+    if (!candidateEndpoints.includes("https://aauchamo.vercel.app/api/tracking")) {
+      candidateEndpoints.push("https://aauchamo.vercel.app/api/tracking");
+    }
+
+    for (const endpoint of candidateEndpoints) {
       try {
-        const targetUrl = `${inventoryEndpoint.replace(/\/$/, "")}/${encodeURIComponent(reference)}`;
+        const targetUrl = `${endpoint.replace(/\/$/, "")}/${encodeURIComponent(reference)}`;
         const response = await fetch(targetUrl, {
           headers: {
             accept: "application/json",
@@ -81,7 +87,7 @@ export async function GET(_request: Request, context: { params: Promise<{ refere
           });
         }
       } catch (err) {
-        console.warn("ERP tracking endpoint query failed, checking enquiry fallback:", err);
+        console.warn(`Tracking attempt failed on ${endpoint}:`, err);
       }
     }
 
