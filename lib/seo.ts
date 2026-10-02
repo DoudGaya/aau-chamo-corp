@@ -13,6 +13,18 @@ export type PageMetadata = {
   noindex?: boolean;
 };
 
+export function safeUrl(path: string, base: string = siteConfig.url): string {
+  try {
+    const cleanBase = base.startsWith("http://") || base.startsWith("https://")
+      ? base.replace(/\/+$/, "")
+      : `https://${base.replace(/\/+$/, "")}`;
+    return new URL(path, cleanBase).toString();
+  } catch {
+    const cleanPath = path.startsWith("/") ? path : `/${path}`;
+    return `https://www.aauchamo.com${cleanPath}`;
+  }
+}
+
 export function createPageMetadata({
   title,
   description,
@@ -24,8 +36,8 @@ export function createPageMetadata({
   keywords,
   noindex = false,
 }: PageMetadata): Metadata {
-  const canonical = new URL(path, siteConfig.url).toString();
-  const imageUrl = new URL(image, siteConfig.url).toString();
+  const canonical = safeUrl(path);
+  const imageUrl = safeUrl(image);
 
   return {
     title,
@@ -79,7 +91,7 @@ export function breadcrumbJsonLd(items: { name: string; path: string }[]) {
       "@type": "ListItem",
       position: index + 1,
       name: item.name,
-      item: new URL(item.path, siteConfig.url).toString(),
+      item: safeUrl(item.path),
     })),
   };
 }
@@ -118,7 +130,7 @@ export function serviceJsonLd({
     name,
     serviceType: serviceType || name,
     description,
-    url: new URL(url, siteConfig.url).toString(),
+    url: safeUrl(url),
     provider: { "@id": `${siteConfig.url}/#organization` },
     areaServed: { "@type": "Country", name: areaServed },
     hasOfferCatalog: {
@@ -159,8 +171,8 @@ export function articleJsonLd({
     "@type": "NewsArticle",
     headline: title,
     description,
-    url: new URL(url, siteConfig.url).toString(),
-    image: [new URL(imageUrl, siteConfig.url).toString()],
+    url: safeUrl(url),
+    image: [safeUrl(imageUrl)],
     datePublished: publishedTime || new Date().toISOString(),
     dateModified: modifiedTime || publishedTime || new Date().toISOString(),
     author: {
@@ -173,7 +185,7 @@ export function articleJsonLd({
     },
     mainEntityOfPage: {
       "@type": "WebPage",
-      "@id": new URL(url, siteConfig.url).toString(),
+      "@id": safeUrl(url),
     },
   };
 }

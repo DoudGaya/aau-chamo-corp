@@ -17,8 +17,16 @@ export const metadata: Metadata = createPageMetadata({
   ],
 });
 
-export default async function TrackCargoPage({ searchParams }: { searchParams: Promise<{ reference?: string }> }) {
-  const { reference = "" } = await searchParams;
+export default async function TrackCargoPage(props: { searchParams?: Promise<{ reference?: string }> }) {
+  let reference = "";
+  try {
+    const sp = await props.searchParams;
+    if (sp?.reference && typeof sp.reference === "string") {
+      reference = sp.reference;
+    }
+  } catch {
+    reference = "";
+  }
 
   const structuredData = [
     breadcrumbJsonLd([

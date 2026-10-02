@@ -4,7 +4,9 @@ import { NextStudio } from 'next-sanity/studio';
 import config from '../../../sanity.config';
 import '../studio.css';
 
-const projectId = process.env.NEXT_PUBLIC_SANITY_PROJECT_ID;
+export const dynamic = 'force-static';
+
+const projectId = process.env.NEXT_PUBLIC_SANITY_PROJECT_ID || '8ubhp1gx';
 
 export default function StudioPage() {
   if (!projectId) {

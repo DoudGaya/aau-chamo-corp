@@ -18,8 +18,16 @@ export const metadata: Metadata = createPageMetadata({
   ],
 });
 
-export default async function EnquirePage({ searchParams }: { searchParams: Promise<{ type?: string }> }) {
-  const { type = "cargo" } = await searchParams;
+export default async function EnquirePage(props: { searchParams?: Promise<{ type?: string }> }) {
+  let type = "cargo";
+  try {
+    const sp = await props.searchParams;
+    if (sp?.type && typeof sp.type === "string") {
+      type = sp.type;
+    }
+  } catch {
+    type = "cargo";
+  }
 
   const structuredData = [
     breadcrumbJsonLd([
