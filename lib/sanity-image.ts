@@ -64,6 +64,53 @@ export type EventItem = {
   registrationLink?: string;
 };
 
+export type PartnerItem = {
+  _id: string;
+  name: string;
+  slug?: string;
+  category?: string;
+  scope: string;
+  badge?: string;
+  logo?: SanityImage;
+  activityImage?: SanityImage;
+  websiteUrl?: string;
+  order?: number;
+  featured?: boolean;
+};
+
+export type TestimonialItem = {
+  _id: string;
+  clientName: string;
+  clientRole: string;
+  company: string;
+  service: string;
+  quote: string;
+  avatar?: SanityImage;
+  companyLogo?: SanityImage;
+  activityImage?: SanityImage;
+  rating?: number;
+  verified?: boolean;
+  order?: number;
+  featured?: boolean;
+};
+
+export type ActivityHighlight = {
+  _id: string;
+  title: string;
+  code?: string;
+  category: string;
+  summary: string;
+  image?: SanityImage;
+  imageUrl?: string;
+  stat?: string;
+  statLabel?: string;
+  capabilities?: string[];
+  linkUrl?: string;
+  linkText?: string;
+  order?: number;
+  featured?: boolean;
+};
+
 export function sanityImageUrl(source: SanityImage | undefined, width: number, height: number): string | null {
   if (!imageBuilder || !source?.asset) return null;
   try {

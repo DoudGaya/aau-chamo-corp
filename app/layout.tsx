@@ -209,7 +209,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
 
   return (
     <html lang="en" className={`${archivo.variable} ${plexMono.variable}`}>
-      <body>
+      <body suppressHydrationWarning>
         <a className="skip-link" href="#main-content">Skip to content</a>
         <Header />
         <main id="main-content">{children}</main>
