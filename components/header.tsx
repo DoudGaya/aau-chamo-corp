@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { Menu, PackageSearch, X } from "lucide-react";
+import { ArrowUpRight, Menu, PackageSearch, UserCheck, X } from "lucide-react";
 import { useState } from "react";
 import { navigation } from "@/lib/site";
 
@@ -16,8 +16,9 @@ export function Header() {
           <span>Cargo · Aviation · Travel · International Business</span>
           <div className="utility-links">
             <Link href="/track-cargo">Track cargo</Link>
+            <Link href="/portal">Client portal</Link>
             <Link href="/gallery">Gallery</Link>
-            <Link href="/enquire">Customer enquiry</Link>
+            <Link href="/enquire">Enquiry</Link>
           </div>
         </div>
       </div>
@@ -29,7 +30,9 @@ export function Header() {
           {navigation.map((item) => <Link key={item.href} href={item.href}>{item.label}</Link>)}
         </nav>
         <div className="nav-actions">
-          <Link className="button red" href="/enquire">Book / Enquire</Link>
+          <Link className="button red" href="/onboard" style={{ fontWeight: "700" }}>
+            Get Started / Onboard <ArrowUpRight size={16} />
+          </Link>
           <button
             className="menu-button"
             type="button"
@@ -46,7 +49,12 @@ export function Header() {
         <>
           <div className="mobile-backdrop" onClick={() => setOpen(false)} aria-hidden="true" />
           <nav id="mobile-navigation" className="mobile-menu" aria-label="Mobile navigation">
-            {[...navigation, { label: "Track cargo", href: "/track-cargo" }, { label: "Book / Enquire", href: "/enquire" }].map((item) => (
+            {[
+              ...navigation,
+              { label: "Track cargo", href: "/track-cargo" },
+              { label: "Client Portal", href: "/portal" },
+              { label: "Get Started / Onboard", href: "/onboard" },
+            ].map((item) => (
               <Link key={item.href} href={item.href} onClick={() => setOpen(false)}>
                 {item.label}{item.href === "/track-cargo" ? <PackageSearch size={16} /> : null}
               </Link>

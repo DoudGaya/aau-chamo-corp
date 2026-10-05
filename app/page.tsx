@@ -63,7 +63,7 @@ export default async function Home() {
           <div className="hero-copy">
             <p>A.A.U Chamo connects cargo logistics, aviation, travel and business support through one dependable customer gateway.</p>
             <div className="hero-actions">
-              <Link className="button red" href="/enquire">Book / Enquire <ArrowUpRight size={18} /></Link>
+              <Link className="button red" href="/onboard">Get Started / Onboard <ArrowUpRight size={18} /></Link>
               <Link className="button light" href="/cargo-logistics">Explore cargo services</Link>
             </div>
           </div>
