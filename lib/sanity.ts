@@ -257,8 +257,8 @@ async function safeFetch<T>(query: string, params: Record<string, unknown>, fall
   if (!client) return fallback;
   try {
     return await client.fetch<T>(query, params, {
-      cache: "force-cache",
-      next: { revalidate: 300, tags },
+      cache: process.env.NODE_ENV === "development" ? "no-store" : "force-cache",
+      next: { revalidate: process.env.NODE_ENV === "development" ? 0 : 60, tags },
     });
   } catch (error) {
     console.error("Sanity content fetch failed", error);
@@ -361,7 +361,7 @@ export async function getPartners(): Promise<PartnerItem[]> {
     }`,
     {},
     fallbackPartners,
-    ["sanity-partners"],
+    ["sanity-partners", "sanity-partner"],
   );
   return result && result.length > 0 ? result : fallbackPartners;
 }
@@ -385,7 +385,7 @@ export async function getTestimonials(): Promise<TestimonialItem[]> {
     }`,
     {},
     fallbackTestimonials,
-    ["sanity-testimonials"],
+    ["sanity-testimonials", "sanity-testimonial"],
   );
   return result && result.length > 0 ? result : fallbackTestimonials;
 }
@@ -409,7 +409,7 @@ export async function getActivityHighlights(): Promise<ActivityHighlight[]> {
     }`,
     {},
     fallbackActivityHighlights,
-    ["sanity-activities"],
+    ["sanity-activities", "sanity-activityHighlight"],
   );
   return result && result.length > 0 ? result : fallbackActivityHighlights;
 }

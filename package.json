@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "typecheck": "tsc --noEmit --incremental false",
+    "seed:sanity": "node scripts/seed-sanity.mjs",
     "check": "npm run typecheck && npm run lint && npm run build",
     "postinstall": "prisma generate"
   },

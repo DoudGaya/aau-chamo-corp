@@ -145,7 +145,7 @@ export default async function Home() {
             </div>
             <div className="activities-grid">
               {activities.map((act: ActivityHighlight, index: number) => {
-                const imgUrl = act.imageUrl || sanityImageUrl(act.image, 800, 500) || "/images/activity-cargo-ramp.jpg";
+                const imgUrl = sanityImageUrl(act.image, 800, 500) || act.imageUrl || "/images/activity-cargo-ramp.jpg";
                 const code = act.code || String(index + 1).padStart(2, "0");
 
                 return (
@@ -228,41 +228,49 @@ export default async function Home() {
               </p>
             </div>
             <div className="partners-grid">
-              {partners.map((partner: PartnerItem, index: number) => (
-                <article className="partner-card" key={partner._id}>
-                  <div>
-                    <div className="partner-top">
-                      <span className="partner-index">{String(index + 1).padStart(2, "0")}</span>
-                      {partner.badge && (
-                        <span className="partner-badge-pill">
-                          <ShieldCheck size={11} style={{ color: "var(--red)" }} />
-                          {partner.badge}
-                        </span>
+              {partners.map((partner: PartnerItem, index: number) => {
+                const logoUrl = sanityImageUrl(partner.logo, 240, 80);
+                return (
+                  <article className="partner-card" key={partner._id}>
+                    <div>
+                      <div className="partner-top">
+                        <span className="partner-index">{String(index + 1).padStart(2, "0")}</span>
+                        {partner.badge && (
+                          <span className="partner-badge-pill">
+                            <ShieldCheck size={11} style={{ color: "var(--red)" }} />
+                            {partner.badge}
+                          </span>
+                        )}
+                      </div>
+                      {logoUrl && (
+                        <div style={{ marginBottom: 14 }}>
+                          <Image src={logoUrl} alt={partner.name} width={120} height={36} style={{ objectFit: "contain" }} />
+                        </div>
+                      )}
+                      <h3>{partner.name}</h3>
+                      <p className="partner-scope">{partner.scope}</p>
+                    </div>
+                    <div className="partner-footer">
+                      <span className="partner-status">
+                        <span className="partner-status-dot" />
+                        Active Network Alliance
+                      </span>
+                      {partner.websiteUrl ? (
+                        <a
+                          href={partner.websiteUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="partner-link"
+                        >
+                          Verify Portal <ArrowUpRight size={13} />
+                        </a>
+                      ) : (
+                        <span className="mono" style={{ color: "var(--muted)", fontSize: 11 }}>Accredited</span>
                       )}
                     </div>
-                    <h3>{partner.name}</h3>
-                    <p className="partner-scope">{partner.scope}</p>
-                  </div>
-                  <div className="partner-footer">
-                    <span className="partner-status">
-                      <span className="partner-status-dot" />
-                      Active Network Alliance
-                    </span>
-                    {partner.websiteUrl ? (
-                      <a
-                        href={partner.websiteUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="partner-link"
-                      >
-                        Verify Portal <ArrowUpRight size={13} />
-                      </a>
-                    ) : (
-                      <span className="mono" style={{ color: "var(--muted)", fontSize: 11 }}>Accredited</span>
-                    )}
-                  </div>
-                </article>
-              ))}
+                  </article>
+                );
+              })}
             </div>
           </div>
         </section>
@@ -289,6 +297,7 @@ export default async function Home() {
                   .slice(0, 2)
                   .join("")
                   .toUpperCase();
+                const avatarUrl = sanityImageUrl(t.avatar, 96, 96);
 
                 return (
                   <article className="testimonial-card" key={t._id}>
@@ -304,9 +313,15 @@ export default async function Home() {
                       </blockquote>
                     </div>
                     <div className="testimonial-client">
-                      <div className="testimonial-avatar" aria-hidden="true">
-                        {initials}
-                      </div>
+                      {avatarUrl ? (
+                        <div style={{ width: 44, height: 44, borderRadius: 2, overflow: "hidden", position: "relative", flexShrink: 0, border: "1px solid var(--line)" }}>
+                          <Image src={avatarUrl} alt={t.clientName} fill style={{ objectFit: "cover" }} />
+                        </div>
+                      ) : (
+                        <div className="testimonial-avatar" aria-hidden="true">
+                          {initials}
+                        </div>
+                      )}
                       <div className="testimonial-details">
                         <strong>{t.clientName}</strong>
                         <span>{t.clientRole} · {t.company}</span>
