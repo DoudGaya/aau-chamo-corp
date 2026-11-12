@@ -41,13 +41,25 @@ export type GalleryItem = {
 export type StaffMember = {
   _id: string;
   name: string;
+  slug: string;
   role: string;
   department?: string;
+  station?: string;
   bio?: string;
+  body?: unknown[];
   portrait?: SanityImage;
   hierarchyOrder?: number;
   email?: string;
+  phone?: string;
   linkedinUrl?: string;
+  twitterUrl?: string;
+  responsibilities?: string[];
+  expertise?: string[];
+  qualifications?: string[];
+  joinedYear?: string;
+  seoTitle?: string;
+  seoDescription?: string;
+  seoImage?: SanityImage;
 };
 
 export type EventItem = {

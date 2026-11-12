@@ -1,12 +1,13 @@
 import type { MetadataRoute } from "next";
 import { services } from "@/lib/content";
-import { getEvents, getNewsArticles } from "@/lib/sanity";
+import { getEvents, getNewsArticles, getStaffMembers } from "@/lib/sanity";
 import { siteConfig } from "@/lib/site";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const [articles, events] = await Promise.all([
+  const [articles, events, staff] = await Promise.all([
     getNewsArticles(),
     getEvents(),
+    getStaffMembers(),
   ]);
 
   const now = new Date();
@@ -47,5 +48,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.8,
   }));
 
-  return [...coreEntries, ...serviceEntries, ...articleEntries];
+  const staffEntries: MetadataRoute.Sitemap = staff
+    .filter((person) => Boolean(person.slug))
+    .map((person) => ({
+      url: `${siteConfig.url}/staff/${person.slug}`,
+      lastModified: now,
+      changeFrequency: "monthly" as const,
+      priority: 0.75,
+    }));
+
+  return [...coreEntries, ...serviceEntries, ...articleEntries, ...staffEntries];
 }

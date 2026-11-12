@@ -297,14 +297,45 @@ export async function getGalleryItems(): Promise<GalleryItem[]> {
   );
 }
 
+const staffFields = `
+  _id,
+  name,
+  "slug": coalesce(slug.current, _id),
+  role,
+  department,
+  station,
+  bio,
+  body,
+  portrait,
+  hierarchyOrder,
+  email,
+  phone,
+  linkedinUrl,
+  twitterUrl,
+  responsibilities,
+  expertise,
+  qualifications,
+  joinedYear,
+  "seoTitle": seo.metaTitle,
+  "seoDescription": seo.metaDescription,
+  "seoImage": seo.shareImage
+`;
+
 export async function getStaffMembers(): Promise<StaffMember[]> {
   return safeFetch(
-    `*[_type == "staffMember"] | order(hierarchyOrder asc, _createdAt asc) {
-      _id, name, role, department, bio, portrait, hierarchyOrder, email, linkedinUrl
-    }`,
+    `*[_type == "staffMember"] | order(hierarchyOrder asc, _createdAt asc) {${staffFields}}`,
     {},
     [],
     ["sanity-staff", "sanity-staffMember"],
+  );
+}
+
+export async function getStaffMember(slug: string): Promise<StaffMember | null> {
+  return safeFetch(
+    `*[_type == "staffMember" && (slug.current == $slug || _id == $slug)][0] {${staffFields}}`,
+    { slug },
+    null,
+    ["sanity-staff", `sanity-staff-${slug}`],
   );
 }
 

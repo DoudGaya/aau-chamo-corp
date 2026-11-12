@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Image from "next/image";
+import Link from "next/link";
 import { Award, Check, Compass, Globe, Handshake, Mail, ShieldCheck, Target, UserCircle2 } from "lucide-react";
 import { CtaBand } from "@/components/cta-band";
 import { PageHero } from "@/components/page-hero";
@@ -81,7 +82,7 @@ export default async function AboutPage() {
           </div>
         </div>
       </section>
-      <section className="section">
+      <section className="section" id="team">
         <div className="shell">
           <span className="eyebrow">Leadership &amp; Management</span>
           <h2 className="headline" style={{ marginBottom: 48 }}>The team behind every service decision.</h2>
@@ -90,6 +91,7 @@ export default async function AboutPage() {
             <div className="team-grid">
               {staff.map((person) => {
                 const photo = sanityImageUrl(person.portrait, 600, 600);
+                const profileHref = person.slug ? `/staff/${person.slug}` : undefined;
                 return (
                   <div className="team-card" key={person._id}>
                     <div className="team-card-image">
@@ -105,10 +107,22 @@ export default async function AboutPage() {
                       ) : null}
                     </div>
                     <div className="team-card-body">
-                      <h3>{person.name}</h3>
+                      <h3>
+                        {profileHref ? (
+                          <Link href={profileHref} className="team-card-name-link">
+                            {person.name}
+                          </Link>
+                        ) : (
+                          person.name
+                        )}
+                      </h3>
                       <p className="team-role">{person.role}</p>
-                      {person.bio ? <p className="team-bio">{person.bio}</p> : null}
                       <div className="team-card-links">
+                        {profileHref ? (
+                          <Link href={profileHref} className="team-link team-view-profile">
+                            View full profile &rarr;
+                          </Link>
+                        ) : null}
                         {person.email ? (
                           <a href={`mailto:${person.email}`} title={`Email ${person.name}`} className="team-link">
                             <Mail size={16} /> <span>{person.email}</span>
