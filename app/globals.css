@@ -829,6 +829,76 @@ img { max-width: 100%; }
   font-size: 12px;
   font-family: var(--font-mono), monospace;
 }
+
+/* Regulatory Licenses & Accreditations */
+.licenses-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  border-top: 1px solid var(--line);
+  border-left: 1px solid var(--line);
+}
+.license-card {
+  padding: 32px 28px;
+  background: white;
+  border-right: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: background .2s ease;
+}
+.license-card:hover {
+  background: var(--paper-bright);
+}
+.license-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;
+}
+.license-number-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-mono), monospace;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--ink);
+  background: var(--paper);
+  padding: 4px 8px;
+  border: 1px solid var(--line);
+}
+.license-validity-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: var(--font-mono), monospace;
+  font-size: 11px;
+  font-weight: 600;
+  color: #065f46;
+}
+.license-badge-wrap {
+  margin-bottom: 16px;
+}
+.license-card h3 {
+  margin: 0 0 6px;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -.02em;
+  color: var(--ink);
+}
+.license-issuer {
+  margin: 0 0 10px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--red);
+}
+.license-scope {
+  margin: 0 0 16px;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.6;
+}
 .partner-status {
   display: inline-flex;
   align-items: center;
@@ -994,6 +1064,7 @@ img { max-width: 100%; }
   .news-card.featured { grid-column: 1 / -1; }
   .activities-grid { grid-template-columns: 1fr; }
   .partners-grid { grid-template-columns: repeat(2, 1fr); }
+  .licenses-grid { grid-template-columns: repeat(2, 1fr); }
   .testimonials-grid { grid-template-columns: 1fr; }
   .footer-grid { grid-template-columns: 1.4fr 1fr 1fr; }
   .footer-brand { grid-column: 1 / -1; }
@@ -1003,6 +1074,7 @@ img { max-width: 100%; }
   .shell { width: min(100% - 28px, 1240px); }
   .section { padding: 74px 0; }
   .partners-grid { grid-template-columns: 1fr; }
+  .licenses-grid { grid-template-columns: 1fr; }
   .activity-card-body { padding: 24px 20px; }
   .partner-card { padding: 24px 20px; }
   .testimonial-card { padding: 24px 20px; }

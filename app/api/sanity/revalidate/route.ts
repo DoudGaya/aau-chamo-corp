@@ -5,7 +5,7 @@ import { z } from "zod";
 export const runtime = "nodejs";
 
 const payloadSchema = z.object({
-  _type: z.enum(["newsArticle", "galleryItem", "siteSettings", "staffMember"]),
+  _type: z.enum(["newsArticle", "galleryItem", "siteSettings", "staffMember", "regulatoryLicense", "stationBranch", "partner"]),
   slug: z.string().optional(),
 });
 
@@ -37,6 +37,14 @@ export async function POST(request: Request) {
     revalidatePath("/staff");
     revalidatePath("/sitemap.xml");
     if (payload.data.slug) revalidatePath(`/staff/${payload.data.slug}`);
+  } else if (payload.data._type === "stationBranch") {
+    revalidateTag("sanity-branches", { expire: 0 });
+    revalidatePath("/about");
+    revalidatePath("/");
+  } else if (payload.data._type === "regulatoryLicense") {
+    revalidateTag("sanity-licenses", { expire: 0 });
+    revalidatePath("/");
+    revalidatePath("/about");
   } else {
     revalidatePath("/", "layout");
   }

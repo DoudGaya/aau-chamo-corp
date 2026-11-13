@@ -90,6 +90,32 @@ export type PartnerItem = {
   featured?: boolean;
 };
 
+export type RegulatoryLicenseItem = {
+  _id: string;
+  title: string;
+  licenseNumber: string;
+  issuer: string;
+  category: string;
+  scope?: string;
+  badge?: SanityImage;
+  validity?: string;
+  verificationUrl?: string;
+  order?: number;
+  featured?: boolean;
+};
+
+export type BranchItem = {
+  _id?: string;
+  city: string;
+  code?: string;
+  role: string;
+  address?: string;
+  phone?: string;
+  email?: string;
+  order?: number;
+  isActive?: boolean;
+};
+
 export type TestimonialItem = {
   _id: string;
   clientName: string;

@@ -11,6 +11,8 @@ export const deskStructure: StructureResolver = (S) =>
             .title('Site Management')
             .items([
               S.documentTypeListItem('partner').title('Partners & Strategic Alliances'),
+              S.documentTypeListItem('regulatoryLicense').title('Accreditations & Regulatory Licenses'),
+              S.documentTypeListItem('stationBranch').title('Stations & Regional Branches'),
               S.documentTypeListItem('testimonial').title('Client Testimonials & Feedback'),
               S.documentTypeListItem('activityHighlight').title('Operational Activities & Highlights'),
             ])

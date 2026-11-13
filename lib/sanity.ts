@@ -1,8 +1,8 @@
 import "server-only";
 
 import { createClient, type SanityClient } from "@sanity/client";
-import { newsItems } from "@/lib/content";
-import type { NewsArticle, GalleryItem, StaffMember, EventItem, PartnerItem, TestimonialItem, ActivityHighlight } from "./sanity-image";
+import { newsItems, branches as fallbackBranches } from "@/lib/content";
+import type { NewsArticle, GalleryItem, StaffMember, EventItem, PartnerItem, TestimonialItem, ActivityHighlight, RegulatoryLicenseItem, BranchItem } from "./sanity-image";
 export * from "./sanity-image";
 
 const projectId = process.env.NEXT_PUBLIC_SANITY_PROJECT_ID?.trim();
@@ -395,6 +395,84 @@ export async function getPartners(): Promise<PartnerItem[]> {
     ["sanity-partners", "sanity-partner"],
   );
   return result && result.length > 0 ? result : fallbackPartners;
+}
+
+const fallbackLicenses: RegulatoryLicenseItem[] = [
+  {
+    _id: "lic-cac",
+    title: "Corporate Affairs Commission Incorporation",
+    licenseNumber: "RC: 1782299",
+    issuer: "Corporate Affairs Commission (CAC)",
+    category: "corporate",
+    scope: "Certified Federal Republic of Nigeria corporate business agency entity.",
+    validity: "Active & Certified",
+    order: 1,
+    featured: true,
+  },
+  {
+    _id: "lic-ncaa",
+    title: "Air Transport Organiser (ATO) Permit",
+    licenseNumber: "NCAA/ATO/CERT/2026",
+    issuer: "Nigerian Civil Aviation Authority (NCAA)",
+    category: "aviation",
+    scope: "Authorized for scheduled flight reservation, charter operations and airport passenger service.",
+    validity: "Active & Audited",
+    order: 2,
+    featured: true,
+  },
+  {
+    _id: "lic-iata",
+    title: "IATA Accredited Agency Alliance",
+    licenseNumber: "IATA-NG-CARGO-8812",
+    issuer: "International Air Transport Association (IATA)",
+    category: "cargo",
+    scope: "Accredited cargo documentation, air waybill issuance and international freight handling.",
+    validity: "Active & Accredited",
+    order: 3,
+    featured: true,
+  },
+];
+
+export async function getLicenses(): Promise<RegulatoryLicenseItem[]> {
+  const result = await safeFetch<RegulatoryLicenseItem[]>(
+    `*[_type == "regulatoryLicense" && featured != false] | order(order asc, _createdAt desc) {
+      _id,
+      title,
+      licenseNumber,
+      issuer,
+      category,
+      scope,
+      badge,
+      validity,
+      verificationUrl,
+      order,
+      featured
+    }`,
+    {},
+    fallbackLicenses,
+    ["sanity-licenses", "sanity-regulatoryLicense"],
+  );
+  return result && result.length > 0 ? result : fallbackLicenses;
+}
+
+export async function getBranches(): Promise<BranchItem[]> {
+  const result = await safeFetch<BranchItem[]>(
+    `*[_type == "stationBranch" && isActive != false] | order(order asc, _createdAt asc) {
+      _id,
+      city,
+      code,
+      role,
+      address,
+      phone,
+      email,
+      order,
+      isActive
+    }`,
+    {},
+    fallbackBranches,
+    ["sanity-branches", "sanity-stationBranch"],
+  );
+  return result && result.length > 0 ? result : fallbackBranches;
 }
 
 export async function getTestimonials(): Promise<TestimonialItem[]> {

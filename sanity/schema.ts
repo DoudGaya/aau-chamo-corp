@@ -5,6 +5,8 @@ import event from './schemas/documents/event';
 import post from './schemas/documents/post';
 import galleryItem from './schemas/documents/galleryItem';
 import partner from './schemas/documents/partner';
+import regulatoryLicense from './schemas/documents/license';
+import stationBranch from './schemas/documents/stationBranch';
 import testimonial from './schemas/documents/testimonial';
 import activityHighlight from './schemas/documents/activityHighlight';
 
@@ -12,6 +14,8 @@ export const schema = {
   types: [
     seo,
     partner,
+    regulatoryLicense,
+    stationBranch,
     testimonial,
     activityHighlight,
     staffMember,

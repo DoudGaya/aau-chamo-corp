@@ -1,14 +1,23 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { Award, Check, Compass, Globe, Handshake, Mail, ShieldCheck, Target, UserCircle2 } from "lucide-react";
+import { Award, Check, CheckCircle2, Compass, Globe, Handshake, Mail, ShieldCheck, Target, UserCircle2 } from "lucide-react";
 import { CtaBand } from "@/components/cta-band";
 import { PageHero } from "@/components/page-hero";
-import { aboutContent, branches } from "@/lib/content";
-import { getStaffMembers, sanityImageUrl } from "@/lib/sanity";
+import { aboutContent } from "@/lib/content";
+import {
+  getStaffMembers,
+  getBranches,
+  getLicenses,
+  sanityImageUrl,
+  type RegulatoryLicenseItem,
+  type BranchItem,
+} from "@/lib/sanity";
 
 import { breadcrumbJsonLd, createPageMetadata } from "@/lib/seo";
 import { siteConfig } from "@/lib/site";
+
+export const revalidate = 60;
 
 export const metadata: Metadata = createPageMetadata({
   title: "About A.A.U Chamo | Cargo, Aviation & International Business Agency Nigeria",
@@ -26,7 +35,11 @@ export const metadata: Metadata = createPageMetadata({
 });
 
 export default async function AboutPage() {
-  const staff = await getStaffMembers();
+  const [staff, branches, licenses] = await Promise.all([
+    getStaffMembers(),
+    getBranches(),
+    getLicenses(),
+  ]);
 
   const structuredData = [
     breadcrumbJsonLd([
@@ -160,9 +173,80 @@ export default async function AboutPage() {
       <section className="section">
         <div className="shell">
           <div className="section-heading"><div><span className="eyebrow">Branches &amp; stations</span><h2 className="headline">Coverage where customers need it.</h2></div><p className="lede">Contact details are maintained centrally so customers can be routed to the appropriate station.</p></div>
-          <div className="service-index">{branches.map((branch, index) => <div className="service-row" key={branch.city}><span className="num">{String(index + 1).padStart(2, "0")}</span><h3>{branch.city}</h3><p>{branch.role}</p><Award size={20} /></div>)}</div>
+          <div className="service-index">
+            {branches.map((branch: BranchItem, index: number) => (
+              <div className="service-row" key={branch.city}>
+                <span className="num">{String(index + 1).padStart(2, "0")}</span>
+                <div>
+                  <h3 style={{ margin: 0 }}>{branch.city}{branch.code ? ` (${branch.code})` : ""}</h3>
+                  {branch.address && <small style={{ color: "var(--muted)", display: "block", marginTop: 4 }}>{branch.address}</small>}
+                </div>
+                <p>{branch.role}</p>
+                <Award size={20} />
+              </div>
+            ))}
+          </div>
         </div>
       </section>
+
+      {licenses.length > 0 && (
+        <section className="section" style={{ background: "var(--paper)" }}>
+          <div className="shell">
+            <div className="section-heading">
+              <div>
+                <span className="eyebrow">Regulatory Accreditations &amp; Licenses</span>
+                <h2 className="headline">Certified compliance across aviation, logistics and trade.</h2>
+              </div>
+              <p className="lede">
+                Official regulatory approvals, statutory operating licenses and accredited institutional memberships authorizing A.A.U Chamo operations.
+              </p>
+            </div>
+            <div className="licenses-grid">
+              {licenses.map((lic: RegulatoryLicenseItem) => {
+                const badgeUrl = sanityImageUrl(lic.badge, 200, 200);
+                return (
+                  <article className="license-card" key={lic._id}>
+                    <div>
+                      <div className="license-top">
+                        <span className="license-number-badge">
+                          <Award size={13} style={{ color: "var(--red)" }} />
+                          {lic.licenseNumber}
+                        </span>
+                        {lic.validity && (
+                          <span className="license-validity-tag">
+                            <CheckCircle2 size={12} style={{ color: "#059669" }} />
+                            {lic.validity}
+                          </span>
+                        )}
+                      </div>
+                      {badgeUrl && (
+                        <div className="license-badge-wrap">
+                          <Image src={badgeUrl} alt={lic.title} width={80} height={80} style={{ objectFit: "contain" }} />
+                        </div>
+                      )}
+                      <h3>{lic.title}</h3>
+                      <p className="license-issuer">{lic.issuer}</p>
+                      {lic.scope && <p className="license-scope">{lic.scope}</p>}
+                    </div>
+                    {lic.verificationUrl ? (
+                      <div style={{ marginTop: "auto", paddingTop: 14, borderTop: "1px solid var(--line)" }}>
+                        <a
+                          href={lic.verificationUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="partner-link"
+                        >
+                          Verify Accreditation &rarr;
+                        </a>
+                      </div>
+                    ) : null}
+                  </article>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+      )}
       <CtaBand title="Bring us the journey. We’ll route the request." />
     </>
   );
