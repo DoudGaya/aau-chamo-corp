@@ -7,6 +7,7 @@ import { services } from "@/lib/content";
 import {
   getEvents,
   getNewsArticles,
+  getPosts,
   getPartners,
   getLicenses,
   getBranches,
@@ -15,6 +16,7 @@ import {
   sanityImageUrl,
   type EventItem,
   type NewsArticle,
+  type PostItem,
   type PartnerItem,
   type RegulatoryLicenseItem,
   type BranchItem,
@@ -45,8 +47,9 @@ export const metadata = createPageMetadata({
 });
 
 export default async function Home() {
-  const [articles, events, partners, licenses, testimonials, activities, branches] = await Promise.all([
+  const [articles, posts, events, partners, licenses, testimonials, activities, branches] = await Promise.all([
     getNewsArticles(),
+    getPosts(),
     getEvents(),
     getPartners(),
     getLicenses(),
@@ -55,6 +58,7 @@ export default async function Home() {
     getBranches(),
   ]);
   const recentArticles = articles.slice(0, 3);
+  const recentPosts = posts.slice(0, 3);
   const upcomingEvents = events.slice(0, 2);
 
   return (
@@ -259,6 +263,11 @@ export default async function Home() {
                         <div style={{ marginBottom: 14 }}>
                           <Image src={logoUrl} alt={partner.name} width={120} height={36} style={{ objectFit: "contain" }} />
                         </div>
+                      )}
+                      {partner.category && (
+                        <span className="mono" style={{ fontSize: 10, color: "var(--red)", display: "block", marginBottom: 4, textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: 600 }}>
+                          {partner.category.replace(/_/g, " ")}
+                        </span>
                       )}
                       <h3>{partner.name}</h3>
                       <p className="partner-scope">{partner.scope}</p>
@@ -470,6 +479,41 @@ export default async function Home() {
           <div className="form-note" style={{ marginTop: 24 }}><Check size={17} /> Every service statement is written to avoid unverified prices, availability or confirmations.</div>
         </div>
       </section>
+
+      {recentPosts.length > 0 && (
+        <section className="section" style={{ background: "var(--paper)", borderTop: "1px solid var(--line)" }}>
+          <div className="shell">
+            <div className="section-heading">
+              <div>
+                <span className="eyebrow">Posts &amp; Practical Guides</span>
+                <h2 className="headline">Operational checklists and expert advice.</h2>
+              </div>
+              <Link className="status-link" href="/news">View all guides <ArrowRight size={17} /></Link>
+            </div>
+            <div className="news-grid">
+              {recentPosts.map((guide: PostItem) => (
+                <article className="news-card" key={guide._id}>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+                    <span className="news-meta" style={{ color: guide.type === "guide" ? "var(--red)" : "#2563eb", fontWeight: 700 }}>
+                      {guide.type === "guide" ? "Operational Guide" : "Quick Tip"}
+                    </span>
+                    {guide.author && (
+                      <span className="mono" style={{ fontSize: 11, color: "var(--muted)" }}>
+                        By {guide.author.name}
+                      </span>
+                    )}
+                  </div>
+                  <h3>{guide.title}</h3>
+                  <p>{guide.seoDescription || "Operational advice and standard procedures from the A.A.U Chamo team."}</p>
+                  <Link className="status-link" href={`/news/${guide.slug}`} style={{ marginTop: "auto" }}>
+                    Read guidance <ArrowRight size={15} />
+                  </Link>
+                </article>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       <CtaBand title="One request. One reference. The right team." />
     </>

@@ -2,9 +2,11 @@ import type { Metadata } from "next";
 import { Clock3, Mail, MapPin, MessageCircle, Phone } from "lucide-react";
 import { EnquiryForm } from "@/components/enquiry-form";
 import { PageHero } from "@/components/page-hero";
-import { branches } from "@/lib/content";
+import { getBranches, type BranchItem } from "@/lib/sanity";
 import { breadcrumbJsonLd, createPageMetadata } from "@/lib/seo";
 import { siteConfig, whatsappHref } from "@/lib/site";
+
+export const revalidate = 60;
 
 export const metadata: Metadata = createPageMetadata({
   title: "Contact A.A.U Chamo | Head Office Kano, Nigeria | Customer Support",
@@ -21,7 +23,8 @@ export const metadata: Metadata = createPageMetadata({
   ],
 });
 
-export default function ContactPage() {
+export default async function ContactPage() {
+  const branches = await getBranches();
   const whatsapp = whatsappHref();
   const structuredData = [
     breadcrumbJsonLd([
@@ -75,7 +78,34 @@ export default function ContactPage() {
           </div>
         </div>
       </section>
-      <section className="section" style={{ background: "var(--paper)" }}><div className="shell form-layout"><div><span className="eyebrow">General enquiry</span><h2 className="headline">Send a message with a trackable reference.</h2><p className="lede">For a specific cargo or travel request, choose the matching service type in the form.</p><div className="branch-list">{branches.map((branch) => <div className="branch-item" key={branch.city}><strong>{branch.city}</strong><span>{branch.role}</span></div>)}</div></div><EnquiryForm defaultType="general" /></div></section>
+      <section className="section" style={{ background: "var(--paper)" }}>
+        <div className="shell form-layout">
+          <div>
+            <span className="eyebrow">General enquiry</span>
+            <h2 className="headline">Send a message with a trackable reference.</h2>
+            <p className="lede">For a specific cargo or travel request, choose the matching service type in the form.</p>
+            <div className="branch-list">
+              {branches.map((branch: BranchItem) => (
+                <div className="branch-item" key={branch._id || branch.city}>
+                  <strong>{branch.city}{branch.code ? ` (${branch.code})` : ""}</strong>
+                  <span>{branch.role}</span>
+                  {branch.address && (
+                    <small style={{ color: "var(--muted)", display: "block", marginTop: 4 }}>
+                      {branch.address}
+                    </small>
+                  )}
+                  {branch.phone && (
+                    <small style={{ color: "var(--red)", display: "block", marginTop: 2 }}>
+                      {branch.phone}
+                    </small>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+          <EnquiryForm defaultType="general" />
+        </div>
+      </section>
     </>
   );
 }

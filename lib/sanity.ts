@@ -2,7 +2,7 @@ import "server-only";
 
 import { createClient, type SanityClient } from "@sanity/client";
 import { newsItems, branches as fallbackBranches } from "@/lib/content";
-import type { NewsArticle, GalleryItem, StaffMember, EventItem, PartnerItem, TestimonialItem, ActivityHighlight, RegulatoryLicenseItem, BranchItem } from "./sanity-image";
+import type { NewsArticle, PostItem, GalleryItem, StaffMember, EventItem, PartnerItem, TestimonialItem, ActivityHighlight, RegulatoryLicenseItem, BranchItem } from "./sanity-image";
 export * from "./sanity-image";
 
 const projectId = process.env.NEXT_PUBLIC_SANITY_PROJECT_ID?.trim();
@@ -30,6 +30,87 @@ const fallbackArticles: NewsArticle[] = newsItems.map((item, index) => ({
   category: item.category,
   featured: index === 0,
 }));
+
+const fallbackPosts: PostItem[] = [
+  {
+    _id: "guide-1",
+    title: "Air Cargo Preparation: Checklist Before Booking Flight Freight",
+    slug: "air-cargo-preparation-checklist",
+    type: "guide",
+    author: {
+      _id: "author-1",
+      name: "Kabiru Musa Daurawa",
+      role: "Operations Manager",
+      slug: "kabiru-musa-daurawa",
+    },
+    publishedAt: "2026-10-15T10:00:00Z",
+    content: [
+      {
+        _type: "block",
+        children: [
+          {
+            _type: "span",
+            text: "Before dispatching freight through Kano (KAN), Abuja (ABV), or Lagos (LOS), verify that packing dimensions match ULD standards, hazardous goods declarations are certified, and consignee contact numbers are validated.",
+          },
+        ],
+      },
+    ],
+    seoTitle: "Air Cargo Preparation Checklist | A.A.U Chamo Guides",
+    seoDescription: "Step-by-step checklist to prepare commercial air cargo shipments for fast customs clearance and tarmac handover.",
+  },
+  {
+    _id: "guide-2",
+    title: "Quick Tip: Booking Request Reference vs. Confirmed Airway Bill",
+    slug: "booking-request-vs-confirmed-airwaybill",
+    type: "tip",
+    author: {
+      _id: "author-2",
+      name: "Abdullahi Uba Chamo",
+      role: "CEO / Founder",
+      slug: "abdullahi-uba-chamo",
+    },
+    publishedAt: "2026-10-28T14:30:00Z",
+    content: [
+      {
+        _type: "block",
+        children: [
+          {
+            _type: "span",
+            text: "A web booking request produces a provisional tracking ID for team review. Your Master Air Waybill (MAWB) or confirmed flight PNR is issued only after cargo physical inspection and payment verification.",
+          },
+        ],
+      },
+    ],
+    seoTitle: "Booking Request vs Airway Bill | A.A.U Chamo Quick Tips",
+    seoDescription: "Understand the difference between online intake references and legal air carriage contracts.",
+  },
+  {
+    _id: "guide-3",
+    title: "Essential Guide to Group Umrah Flight Booking & Protocol",
+    slug: "guide-to-group-umrah-flight-booking",
+    type: "guide",
+    author: {
+      _id: "author-1",
+      name: "Kabiru Musa Daurawa",
+      role: "Operations Manager",
+      slug: "kabiru-musa-daurawa",
+    },
+    publishedAt: "2026-11-05T09:00:00Z",
+    content: [
+      {
+        _type: "block",
+        children: [
+          {
+            _type: "span",
+            text: "Group delegations traveling to Jeddah or Madinah require group manifest synchronization at least 14 days prior to departure, e-visa validity checks, and bonded ground transfer confirmation.",
+          },
+        ],
+      },
+    ],
+    seoTitle: "Group Umrah Flight & Ground Guide | A.A.U Chamo",
+    seoDescription: "Comprehensive operational guide for travel coordinators managing group pilgrimages from Northern Nigeria.",
+  },
+];
 
 const fallbackGallery: GalleryItem[] = [
   "Airport & cargo operations",
@@ -284,6 +365,53 @@ export async function getNewsArticle(slug: string): Promise<NewsArticle | null> 
     fallback,
     ["sanity-news", `sanity-news-${slug}`],
   );
+}
+
+const postFields = `
+  _id,
+  title,
+  "slug": slug.current,
+  type,
+  "author": author->{
+    _id,
+    name,
+    role,
+    "slug": coalesce(slug.current, _id),
+    portrait
+  },
+  mainImage,
+  content,
+  "seoTitle": seo.metaTitle,
+  "seoDescription": seo.metaDescription,
+  "publishedAt": _createdAt,
+  "updatedAt": _updatedAt
+`;
+
+export async function getPosts(): Promise<PostItem[]> {
+  return safeFetch(
+    `*[_type == "post" && defined(slug.current)] | order(_createdAt desc) {${postFields}}`,
+    {},
+    fallbackPosts,
+    ["sanity-post", "sanity-posts"],
+  );
+}
+
+export async function getPost(slug: string): Promise<PostItem | null> {
+  const fallback = fallbackPosts.find((item) => item.slug === slug) || null;
+  return safeFetch(
+    `*[_type == "post" && slug.current == $slug][0] {${postFields}}`,
+    { slug },
+    fallback,
+    ["sanity-post", `sanity-post-${slug}`],
+  );
+}
+
+export async function getNewsOrPost(slug: string): Promise<{ item: NewsArticle | PostItem; isPost: boolean } | null> {
+  const article = await getNewsArticle(slug);
+  if (article) return { item: article, isPost: false };
+  const post = await getPost(slug);
+  if (post) return { item: post, isPost: true };
+  return null;
 }
 
 export async function getGalleryItems(): Promise<GalleryItem[]> {

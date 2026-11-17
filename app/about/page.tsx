@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { Award, Check, CheckCircle2, Compass, Globe, Handshake, Mail, ShieldCheck, Target, UserCircle2 } from "lucide-react";
+import { ArrowUpRight, Award, Check, CheckCircle2, Compass, Globe, Handshake, Mail, ShieldCheck, Target, UserCircle2 } from "lucide-react";
 import { CtaBand } from "@/components/cta-band";
 import { PageHero } from "@/components/page-hero";
 import { aboutContent } from "@/lib/content";
@@ -9,9 +9,11 @@ import {
   getStaffMembers,
   getBranches,
   getLicenses,
+  getPartners,
   sanityImageUrl,
   type RegulatoryLicenseItem,
   type BranchItem,
+  type PartnerItem,
 } from "@/lib/sanity";
 
 import { breadcrumbJsonLd, createPageMetadata } from "@/lib/seo";
@@ -35,10 +37,11 @@ export const metadata: Metadata = createPageMetadata({
 });
 
 export default async function AboutPage() {
-  const [staff, branches, licenses] = await Promise.all([
+  const [staff, branches, licenses, partners] = await Promise.all([
     getStaffMembers(),
     getBranches(),
     getLicenses(),
+    getPartners(),
   ]);
 
   const structuredData = [
@@ -188,6 +191,72 @@ export default async function AboutPage() {
           </div>
         </div>
       </section>
+
+      {partners.length > 0 && (
+        <section className="section">
+          <div className="shell">
+            <div className="section-heading">
+              <div>
+                <span className="eyebrow">Strategic Alliances</span>
+                <h2 className="headline">Certified airline, handling and regulatory network.</h2>
+              </div>
+              <p className="lede">
+                Direct carrier capacity agreements and accredited handling infrastructure ensuring space guarantee, customs compliance and rapid clearance.
+              </p>
+            </div>
+            <div className="partners-grid">
+              {partners.map((partner: PartnerItem, index: number) => {
+                const logoUrl = sanityImageUrl(partner.logo, 240, 80);
+                return (
+                  <article className="partner-card" key={partner._id}>
+                    <div>
+                      <div className="partner-top">
+                        <span className="partner-index">{String(index + 1).padStart(2, "0")}</span>
+                        {partner.badge && (
+                          <span className="partner-badge-pill">
+                            <ShieldCheck size={11} style={{ color: "var(--red)" }} />
+                            {partner.badge}
+                          </span>
+                        )}
+                      </div>
+                      {logoUrl && (
+                        <div style={{ marginBottom: 14 }}>
+                          <Image src={logoUrl} alt={partner.name} width={120} height={36} style={{ objectFit: "contain" }} />
+                        </div>
+                      )}
+                      {partner.category && (
+                        <span className="mono" style={{ fontSize: 10, color: "var(--red)", display: "block", marginBottom: 4, textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: 600 }}>
+                          {partner.category.replace(/_/g, " ")}
+                        </span>
+                      )}
+                      <h3>{partner.name}</h3>
+                      <p className="partner-scope">{partner.scope}</p>
+                    </div>
+                    <div className="partner-footer">
+                      <span className="partner-status">
+                        <span className="partner-status-dot" />
+                        Active Network Alliance
+                      </span>
+                      {partner.websiteUrl ? (
+                        <a
+                          href={partner.websiteUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="partner-link"
+                        >
+                          Verify Portal <ArrowUpRight size={13} />
+                        </a>
+                      ) : (
+                        <span className="mono" style={{ color: "var(--muted)", fontSize: 11 }}>Accredited</span>
+                      )}
+                    </div>
+                  </article>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+      )}
 
       {licenses.length > 0 && (
         <section className="section" style={{ background: "var(--paper)" }}>

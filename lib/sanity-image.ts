@@ -14,6 +14,28 @@ export type SanityImage = {
   crop?: unknown;
 };
 
+export type PostAuthor = {
+  _id: string;
+  name: string;
+  role: string;
+  slug?: string;
+  portrait?: SanityImage;
+};
+
+export type PostItem = {
+  _id: string;
+  title: string;
+  slug: string;
+  type: "tip" | "guide";
+  author?: PostAuthor;
+  mainImage?: SanityImage;
+  content?: unknown[];
+  seoTitle?: string;
+  seoDescription?: string;
+  publishedAt?: string;
+  updatedAt?: string;
+};
+
 export type NewsArticle = {
   _id: string;
   title: string;

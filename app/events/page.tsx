@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
+import { PortableText } from "@portabletext/react";
 import { Calendar, MapPin, ExternalLink, ArrowRight } from "lucide-react";
 import { PageHero } from "@/components/page-hero";
 import { CtaBand } from "@/components/cta-band";
@@ -116,6 +117,13 @@ export default async function EventsPage() {
                       </div>
 
                       <h3 className="event-title">{ev.title}</h3>
+
+                      {ev.description && Array.isArray(ev.description) && ev.description.length > 0 && (
+                        <div className="event-description prose" style={{ fontSize: "14px", color: "var(--muted)", margin: "8px 0 16px", lineHeight: "1.6" }}>
+                          {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                          <PortableText value={ev.description as any} />
+                        </div>
+                      )}
 
                       {ev.registrationLink ? (
                         <a href={ev.registrationLink} target="_blank" rel="noopener noreferrer" className="button red" style={{ minHeight: "44px", fontSize: "14px", alignSelf: "flex-start", marginTop: "auto" }}>
