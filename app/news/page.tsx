@@ -1,10 +1,10 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, BookOpen, Lightbulb, UserCheck } from "lucide-react";
+import { ArrowRight, BookOpen, Calendar, Lightbulb, UserCheck } from "lucide-react";
 import { CtaBand } from "@/components/cta-band";
 import { PageHero } from "@/components/page-hero";
 import { breadcrumbJsonLd, createPageMetadata } from "@/lib/seo";
-import { getNewsArticles, getPosts, sanityImageUrl, type PostItem } from "@/lib/sanity";
+import { getNewsArticles, getPosts, sanityImageUrl, type NewsArticle, type PostItem } from "@/lib/sanity";
 
 export const revalidate = 300;
 
@@ -24,7 +24,7 @@ export const metadata = createPageMetadata({
 });
 
 function dateLabel(value?: string) {
-  if (!value) return "Published update";
+  if (!value) return null;
   return new Intl.DateTimeFormat("en-NG", { day: "numeric", month: "short", year: "numeric" }).format(new Date(value));
 }
 
@@ -54,30 +54,55 @@ export default async function NewsPage() {
         meta={["Company news", "Service guides", "Operational tips"]}
       />
 
-      {/* Main Company News Section */}
+      {/* ── Company News ── */}
       <section className="section">
         <div className="shell">
-          <div className="section-heading">
+          <div className="news-index-header">
             <div>
               <span className="eyebrow">Announcements</span>
-              <h2 className="headline">Company news &amp; network updates.</h2>
+              <h2 className="headline" style={{ marginTop: 10 }}>Company news &amp; network updates.</h2>
             </div>
-            <p className="lede">Official notices, new routes, partnership briefings, and terminal operations.</p>
+            <p className="lede" style={{ margin: 0, maxWidth: 400 }}>
+              Official notices, new routes, partnership briefings, and terminal operations.
+            </p>
           </div>
-          <div className="news-grid">
-            {articles.map((item, index) => {
-              const coverUrl = sanityImageUrl(item.mainImage, 600, 360);
+
+          <div className="news-index-list">
+            {articles.map((item: NewsArticle, index: number) => {
+              const coverUrl = sanityImageUrl(item.mainImage, 480, 320);
+              const pub = dateLabel(item.publishedAt);
+              const isLead = item.featured || index === 0;
               return (
-                <article className={`news-card ${item.featured || index === 0 ? "featured" : ""}`} key={item._id}>
-                  {coverUrl && (
-                    <div style={{ position: "relative", width: "100%", height: "180px", marginBottom: "14px", overflow: "hidden", borderRadius: "2px" }}>
-                      <Image src={coverUrl} alt={item.mainImage?.alt || item.title} fill sizes="(max-width: 760px) 100vw, 33vw" style={{ objectFit: "cover" }} />
+                <article
+                  className={`news-index-row${isLead ? " news-index-row--lead" : ""}`}
+                  key={item._id}
+                >
+                  {isLead && coverUrl && (
+                    <div className="news-index-thumb">
+                      <Image
+                        src={coverUrl}
+                        alt={item.mainImage?.alt || item.title}
+                        fill
+                        sizes="(max-width: 760px) 100vw, 400px"
+                        style={{ objectFit: "cover" }}
+                      />
                     </div>
                   )}
-                  <span className="news-meta">{item.category} · {dateLabel(item.publishedAt)}</span>
-                  <h2>{item.title}</h2>
-                  <p>{item.excerpt}</p>
-                  <Link className="status-link" href={`/news/${item.slug}`}>Read update <ArrowRight size={15} /></Link>
+                  <div className="news-index-body">
+                    <div className="news-index-meta">
+                      <span className="news-index-category">{item.category}</span>
+                      {pub && (
+                        <span className="news-index-date">
+                          <Calendar size={12} /> {pub}
+                        </span>
+                      )}
+                    </div>
+                    <h3 className="news-index-title">{item.title}</h3>
+                    {item.excerpt && <p className="news-index-excerpt">{item.excerpt}</p>}
+                    <Link className="news-index-cta" href={`/news/${item.slug}`}>
+                      Read update <ArrowRight size={14} />
+                    </Link>
+                  </div>
                 </article>
               );
             })}
@@ -85,65 +110,62 @@ export default async function NewsPage() {
         </div>
       </section>
 
-      {/* Posts & Guides Section (Sanity 'post' collection) */}
+      {/* ── Posts & Guides ── */}
       {posts.length > 0 && (
         <section className="section" style={{ background: "var(--paper)", borderTop: "1px solid var(--line)" }}>
           <div className="shell">
-            <div className="section-heading">
+            <div className="news-index-header">
               <div>
                 <span className="eyebrow">Posts &amp; Guides</span>
-                <h2 className="headline">Operational guides &amp; customer tips.</h2>
+                <h2 className="headline" style={{ marginTop: 10 }}>Operational guides &amp; customer tips.</h2>
               </div>
-              <p className="lede">Practical step-by-step guidance authored by our operations managers and logistics leads.</p>
+              <p className="lede" style={{ margin: 0, maxWidth: 400 }}>
+                Practical step-by-step guidance authored by our operations managers and logistics leads.
+              </p>
             </div>
-            <div className="news-grid">
-              {posts.map((post: PostItem) => {
-                const coverUrl = sanityImageUrl(post.mainImage, 600, 360);
-                const isTip = post.type === "tip";
-                return (
-                  <article className="news-card" key={post._id} style={{ display: "flex", flexDirection: "column" }}>
-                    {coverUrl && (
-                      <div style={{ position: "relative", width: "100%", height: "180px", marginBottom: "14px", overflow: "hidden", borderRadius: "2px" }}>
-                        <Image src={coverUrl} alt={post.mainImage?.alt || post.title} fill sizes="(max-width: 760px) 100vw, 33vw" style={{ objectFit: "cover" }} />
-                      </div>
-                    )}
-                    <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "8px" }}>
-                      <span style={{
-                        background: isTip ? "#fef3c7" : "#e0f2fe",
-                        color: isTip ? "#92400e" : "#0369a1",
-                        padding: "2px 8px",
-                        borderRadius: "3px",
-                        fontSize: "11px",
-                        fontWeight: 600,
-                        display: "inline-flex",
-                        alignItems: "center",
-                        gap: "4px"
-                      }}>
-                        {isTip ? <Lightbulb size={12} /> : <BookOpen size={12} />}
-                        {isTip ? "Quick Tip" : "Service Guide"}
-                      </span>
-                      {post.publishedAt && (
-                        <span className="news-meta" style={{ margin: 0 }}>
-                          · {dateLabel(post.publishedAt)}
-                        </span>
-                      )}
-                    </div>
-                    <h2>{post.title}</h2>
-                    {post.seoDescription && <p>{post.seoDescription}</p>}
-                    
-                    {/* Author Attribution */}
-                    {post.author && (
-                      <div style={{ display: "flex", alignItems: "center", gap: "8px", marginTop: "auto", paddingTop: "12px", borderTop: "1px solid var(--line)" }}>
-                        <UserCheck size={14} style={{ color: "var(--red)" }} />
-                        <small style={{ fontSize: "12px", color: "var(--muted)" }}>
-                          Authored by <strong>{post.author.name}</strong> ({post.author.role})
-                        </small>
-                      </div>
-                    )}
 
-                    <div style={{ marginTop: "12px" }}>
-                      <Link className="status-link" href={`/news/${post.slug}`}>
-                        Read {isTip ? "tip" : "guide"} <ArrowRight size={15} />
+            <div className="guides-index-grid">
+              {posts.map((post: PostItem) => {
+                const coverUrl = sanityImageUrl(post.mainImage, 480, 300);
+                const isTip = post.type === "tip";
+                const pub = dateLabel(post.publishedAt);
+                return (
+                  <article className="guide-card" key={post._id}>
+                    {coverUrl && (
+                      <div className="guide-card-thumb">
+                        <Image
+                          src={coverUrl}
+                          alt={post.mainImage?.alt || post.title}
+                          fill
+                          sizes="(max-width: 760px) 100vw, 380px"
+                          style={{ objectFit: "cover" }}
+                        />
+                      </div>
+                    )}
+                    <div className="guide-card-body">
+                      <div className="guide-card-meta">
+                        <span className={`guide-type-badge ${isTip ? "guide-type-badge--tip" : "guide-type-badge--guide"}`}>
+                          {isTip ? <Lightbulb size={11} /> : <BookOpen size={11} />}
+                          {isTip ? "Quick Tip" : "Service Guide"}
+                        </span>
+                        {pub && (
+                          <span className="news-index-date">
+                            <Calendar size={11} /> {pub}
+                          </span>
+                        )}
+                      </div>
+                      <h3 className="guide-card-title">{post.title}</h3>
+                      {post.seoDescription && (
+                        <p className="guide-card-excerpt">{post.seoDescription}</p>
+                      )}
+                      {post.author && (
+                        <div className="guide-card-author">
+                          <UserCheck size={13} style={{ color: "var(--red)", flexShrink: 0 }} />
+                          <span>By <strong>{post.author.name}</strong> · {post.author.role}</span>
+                        </div>
+                      )}
+                      <Link className="news-index-cta" href={`/news/${post.slug}`}>
+                        Read {isTip ? "tip" : "guide"} <ArrowRight size={14} />
                       </Link>
                     </div>
                   </article>
